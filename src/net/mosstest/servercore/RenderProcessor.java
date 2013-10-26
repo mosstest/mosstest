@@ -27,6 +27,7 @@ import com.jme3.math.ColorRGBA;
 
 import java.util.Arrays;
 
+import net.mosstest.scripting.INodeParams;
 import net.mosstest.scripting.MapChunk;
 import net.mosstest.scripting.MapNode;
 import net.mosstest.scripting.Position;
@@ -43,7 +44,29 @@ public class RenderProcessor extends SimpleApplication {
 	private float rotationSpeed = 1f;
 	private Node worldNode;
 	private SpotLight spot = new SpotLight();
+	
+	public NodeManager nManager;
+	public NodeCache nCache;
 	public ArrayBlockingQueue<MossRenderEvent> renderEventQueue = new ArrayBlockingQueue<>(24000, false);
+	
+	
+	public static RenderProcessor init (NodeManager manager, NodeCache cache) {
+		RenderProcessor app = new RenderProcessor ();
+		AppSettings settings = new AppSettings(true);
+		settings.setResolution(800, 600);
+		settings.setSamples(2);
+		app.setSettings(settings);
+		app.setShowSettings(false);
+		app.initNodeThings(manager, cache);
+		app.start();
+		return app;
+	}
+	
+	
+	private void initNodeThings(NodeManager manager, NodeCache cache) {
+		nManager = manager;
+		nCache = cache;
+	}
 	
 	@Override
 	/**
@@ -205,28 +228,6 @@ public class RenderProcessor extends SimpleApplication {
         
         spot.setDirection(cam.getDirection());
     }
-	
-	
-	/**
-	 * Temporary
-	 * Allows the rendering processor to run independently 
-	 */
-	public static void main (String [] args) {
-		
-		RenderProcessor.init();
-	}
-
-	
-	public static RenderProcessor init () {
-		RenderProcessor app = new RenderProcessor ();
-		AppSettings settings = new AppSettings(true);
-		settings.setResolution(800, 600);
-		settings.setSamples(2);
-		app.setSettings(settings);
-		app.setShowSettings(false);
-		app.start();
-		return app;
-	}
 	
 	/**
 	 * Starting everything up
