@@ -32,7 +32,7 @@ public class LocalRenderPreparator implements IRenderPreparator {
 
 	}
 
-	private RenderProcessor rend;
+	private HexRenderer rend;
 	private NodeCache nc;
 	private volatile boolean run = true;
 	public ArrayBlockingQueue<Position> chunkRequests = new ArrayBlockingQueue<>(
@@ -58,8 +58,8 @@ public class LocalRenderPreparator implements IRenderPreparator {
 		return null;
 	}
 
-	public LocalRenderPreparator(RenderProcessor rp, NodeCache nc) {
-		this.rend = rp;
+	public LocalRenderPreparator(HexRenderer rend2, NodeCache nc) {
+		this.rend = rend2;
 		this.nc = nc;
 	}
 

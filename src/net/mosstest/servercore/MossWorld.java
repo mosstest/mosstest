@@ -32,7 +32,7 @@ public class MossWorld {
 	private FuturesProcessor fp;
 	private INodeManager nm;
 	private IRenderPreparator rp;
-	private RenderProcessor rend;
+	private HexRenderer rend;
 
 	/**
 	 * Initializes a server world. This will start the server once the world is
@@ -110,7 +110,7 @@ public class MossWorld {
 			}*/
 		} //else {
 		/*	*/this.rp = new LocalRenderPreparator(this.rend, this.nc);
-		/*	*/this.rend = RenderProcessor.init(this.nm, this.rp);
+		/*	*/this.rend = HexRenderer.init(this.nm, this.rp);
 		//}
 
 	}

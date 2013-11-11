@@ -44,15 +44,17 @@ public class HexRenderer extends SimpleApplication {
 	private static final float blockSize = 10f;
 	private static final Vector3f[] chunkVertices = new Vector3f[4913];
 	static {
-		for(int x=0; x<=16; x++) {
-			for(int y=0; y<=16; y++) {
-				for(int z = 0; z<=16; z++) {
-					chunkVertices[289*x+17*y+z]=new Vector3f(x*blockSize, y*blockSize, z*blockSize);
+		for (int x = 0; x <= 16; x++) {
+			for (int y = 0; y <= 16; y++) {
+				for (int z = 0; z <= 16; z++) {
+					chunkVertices[289 * x + 17 * y + z] = new Vector3f(x
+							* blockSize, y * blockSize, z * blockSize);
 				}
 			}
 		}
 	}
-	private static final FloatBuffer vertexBuffer = BufferUtils.createFloatBuffer(chunkVertices);
+	private static final FloatBuffer vertexBuffer = BufferUtils
+			.createFloatBuffer(chunkVertices);
 
 	private static final float speed = 3f;
 	private static final float playerHeight = 25;
@@ -60,7 +62,7 @@ public class HexRenderer extends SimpleApplication {
 	private float[] locChanges = { 0, 0, 0 };
 	private double lastTime;
 	private boolean invertY = false;
-	
+
 	private Vector3f initialUpVec;
 	private Node worldNode;
 	private SpotLight spot = new SpotLight();
@@ -85,30 +87,30 @@ public class HexRenderer extends SimpleApplication {
 	}
 
 	private void initNodeThings(INodeManager manager, IRenderPreparator prep) {
-		nManager = manager;
-		rPreparator = prep;
+		this.nManager = manager;
+		this.rPreparator = prep;
 	}
 
 	@Override
 	public void simpleInitApp() {
-		lastTime = 0;
-		worldNode = new Node("world");
-		rootNode.attachChild(worldNode);
-		spot.setSpotRange(150f);
-		spot.setSpotInnerAngle(15f * FastMath.DEG_TO_RAD);
-		spot.setSpotOuterAngle(35f * FastMath.DEG_TO_RAD);
-		spot.setColor(ColorRGBA.White.mult(3f));
-		spot.setPosition(cam.getLocation());
-		spot.setDirection(cam.getDirection());
+		this.lastTime = 0;
+		this.worldNode = new Node("world");
+		this.rootNode.attachChild(this.worldNode);
+		this.spot.setSpotRange(150f);
+		this.spot.setSpotInnerAngle(15f * FastMath.DEG_TO_RAD);
+		this.spot.setSpotOuterAngle(35f * FastMath.DEG_TO_RAD);
+		this.spot.setColor(ColorRGBA.White.mult(3f));
+		this.spot.setPosition(this.cam.getLocation());
+		this.spot.setDirection(this.cam.getDirection());
 
-		sun.setColor(ColorRGBA.White);
-		sun.setDirection(new Vector3f(-.5f, -.5f, -.5f).normalizeLocal());
-		rootNode.addLight(sun);
-		rootNode.addLight(spot);
+		this.sun.setColor(ColorRGBA.White);
+		this.sun.setDirection(new Vector3f(-.5f, -.5f, -.5f).normalizeLocal());
+		this.rootNode.addLight(this.sun);
+		this.rootNode.addLight(this.spot);
 		testChunkEvents();
-		//testLoadSurroundingChunks();
-		flyCam.setEnabled(false);
-		initialUpVec = cam.getUp().clone();
+		// testLoadSurroundingChunks();
+		this.flyCam.setEnabled(false);
+		this.initialUpVec = this.cam.getUp().clone();
 		initKeyBindings();
 	}
 
@@ -118,13 +120,14 @@ public class HexRenderer extends SimpleApplication {
 	 * Looks for new events in the renderEventQueue, moves if necessary.
 	 */
 	public void simpleUpdate(float tpf) {
-		if (lastTime + 10 < System.currentTimeMillis()) {
-			moveWorld(locChanges[0], locChanges[1], locChanges[2]);
-			lastTime = System.currentTimeMillis();
+		if (this.lastTime + 10 < System.currentTimeMillis()) {
+			moveWorld(this.locChanges[0], this.locChanges[1],
+					this.locChanges[2]);
+			this.lastTime = System.currentTimeMillis();
 		}
 
-		inputManager.setCursorVisible(false);
-		MossRenderEvent myEvent = renderEventQueue.poll();
+		this.inputManager.setCursorVisible(false);
+		MossRenderEvent myEvent = this.renderEventQueue.poll();
 		if (myEvent instanceof MossRenderStopEvent) {
 			System.out.println("Thread shutting down");
 		} else if (myEvent instanceof MossRenderChunkEvent) {
@@ -148,53 +151,88 @@ public class HexRenderer extends SimpleApplication {
 		 * com.jme3.asset.plugins.FileLocator.class); }
 		 */
 	}
-	
-	public void getChunk (Position pos) {
+
+	public void getChunk(Position pos) {
 		MapChunk maybe = null;
-		try {maybe = rPreparator.requestChunk(pos);} 
-		catch (MapGeneratorException e) {e.printStackTrace();} 
-		catch (InterruptedException e) {e.printStackTrace();}
-		if (maybe != null) {renderChunk(maybe, pos);}
+		try {
+			maybe = this.rPreparator.requestChunk(pos);
+		} catch (MapGeneratorException e) {
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		if (maybe != null) {
+			renderChunk(maybe, pos);
+		}
 	}
-	
+
 	public void renderChunk(MapChunk chk, Position pos) {
 		if (chk == null) {
 			return;
 		}
 		double offset = 16 * blockSize;
 		int ixOffset = 0;
-		Mesh bigMesh = new Mesh ();
+		Mesh bigMesh = new Mesh();
 		FloatBuffer tcoords = FloatBuffer.allocate(100000);
-		IntBuffer indices = IntBuffer.allocate(100000);
-		//RenderNode[][][] nodesInChunk = new RenderNode[16][16][16];
 
-		indices.rewind()
+		// 6 ints per face * 6 faces * 16 floors * 16 rows * 16 cols
+		// RenderNode[][][] nodesInChunk = new RenderNode[16][16][16];
+		IntBuffer indices = IntBuffer.allocate(6 * 6 * 16 * 16 * 16);
+		indices.rewind();
 		for (byte i = 0; i < 16; i++) {
 			for (byte j = 0; j < 16; j++) {
 				for (byte k = 0; k < 16; k++) {
 					int nVal = chk.getNodeId(i, j, k);
-					//MapNode node = nManager.getNode((short) nVal);
-					//Material mat = getMaterial((short) nVal);
-					if (nVal == 0) {System.out.println("WARRRNINGINIGNINGINGINN");return;}
-					
+					// MapNode node = nManager.getNode((short) nVal);
+					// Material mat = getMaterial((short) nVal);
+					if (nVal == 0) {
+						System.out.println("WARRRNINGINIGNINGINGINN");
+						return;
+					}
+
 					else {
-						
-						float x = (float) ((pos.x + (32 * blockSize * pos.x)) - offset + (i * 3 * blockSize));
+						// These will probably be unused.
+						float x = (float) ((pos.x + (32 * blockSize * pos.x))
+								- offset + (i * 3 * blockSize));
 						float y = (float) ((pos.y - playerHeight) - (j * 3 * blockSize));
-						float z = (float) ((pos.z + (32 * blockSize * pos.z)) - offset  + (k * 3 * blockSize));
-						
-						
-						for(int cv=0; cv<8; cv++) {
-							tcoords.put(1); tcoords.put(0);
-							tcoords.put(1); tcoords.put(1);
-						}
-						
-						
-						
-						//RenderNode geom = new RenderNode(mat, loc, blockSize, NodeManager.getNode((short)nVal)null);
-						//nodesInChunk[i][j][k] = geom;
-						ixOffset += 8;
-						System.out.println(ixOffset);
+						float z = (float) ((pos.z + (32 * blockSize * pos.z))
+								- offset + (k * 3 * blockSize));
+
+						// Tex coordinates are going to require some reworking.
+
+						// The following is a valid name of a variable. It has
+						// no special properties other than being distinctive.
+						int _ = 289 * i + 17 * j + k;
+
+						// IntBuffer#put returns that FloatBuffer so we can
+						// chain like this.
+						indices.put(_).put(_ + 289).put(_ + 1);
+						indices.put(_ + 289 + 1).put(_ + 1).put(_ + 289);
+
+						indices.put(_ + 289).put(_ + 17 + 289)
+								.put(_ + 1 + 17 + 289);
+						indices.put(_ + 1 + 289).put(_ + 289)
+								.put(_ + 1 + 17 + 289);
+
+						indices.put(_ + 1).put(_ + 1 + 289).put(_ + 1 + 17);
+						indices.put(_ + 1 + 17 + 289).put(_ + 1 + 17)
+								.put(_ + 1 + 289);
+
+						indices.put(_ + 17).put(_ + 1 + 17).put(_ + 17 + 289);
+						indices.put(_ + 1 + 17 + 289).put(_ + 17 + 289)
+								.put(_ + 1 + 17);
+
+						indices.put(_).put(_ + 17).put(_ + 289);
+						indices.put(_ + 17 + 289).put(_ + 289).put(_ + 17);
+
+						indices.put(_).put(_ + 1).put(_ + 1 + 17);
+						indices.put(_ + 1 + 17).put(_ + 17).put(_ + 1);
+						System.out.println("<<<<<<<<FINISHED NODE>>>>>>>>");
+						System.out.println(indices.position() + ":"
+								+ indices.limit() + ":" + indices.capacity());
+						// RenderNode geom = new RenderNode(mat, loc, blockSize,
+						// NodeManager.getNode((short)nVal)null);
+						// nodesInChunk[i][j][k] = geom;
 					}
 
 				}
@@ -207,12 +245,13 @@ public class HexRenderer extends SimpleApplication {
 		bigMesh.updateBound();
 		Geometry geom = new Geometry("chunkMesh", bigMesh);
 		geom.setMaterial(mat);
-		worldNode.attachChild(geom);
-		/*RenderMapChunk thisChunk = new RenderMapChunk(nodesInChunk, x, y, z);
-		allChunks.put(pos, thisChunk);*/
+		this.worldNode.attachChild(geom);
+		/*
+		 * RenderMapChunk thisChunk = new RenderMapChunk(nodesInChunk, x, y, z);
+		 * allChunks.put(pos, thisChunk);
+		 */
 	}
-	
-	
+
 	private void testLoadSurroundingChunks() {
 		Position p1 = new Position(0, 0, 0, 0);
 		Position p2 = new Position(1, 0, 0, 0);
@@ -261,30 +300,33 @@ public class HexRenderer extends SimpleApplication {
 		}
 
 		MapChunk ch = new MapChunk(pos, testNodes, testModified);
-		//MapChunk ch2 = new MapChunk(pos2, tN2, tM2);
+		// MapChunk ch2 = new MapChunk(pos2, tN2, tM2);
 		renderChunk(ch, pos);
-		//renderChunk(ch2, pos2);
-		GeometryBatchFactory.optimize(worldNode);
+		// renderChunk(ch2, pos2);
+		GeometryBatchFactory.optimize(this.worldNode);
 	}
-	 
+
 	public Material getMaterial(short nVal) {
 		Material mat = null;
 		switch (nVal) {
 		case 1:
-			mat = new Material(assetManager,
+			mat = new Material(this.assetManager,
 					"Common/MatDefs/Light/Lighting.j3md");
 			mat.setBoolean("UseMaterialColors", true);
 			mat.setColor("Ambient", ColorRGBA.Green);
-			mat.setColor("Diffuse", ColorRGBA.Green);
+			mat.setColor("Diffuse", ColorRGBA.Red);
+			/*mat = new Material(this.assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+			mat.setColor("Color", ColorRGBA.Red);*/
 		}
 		return mat;
 	}
+
 	private void moveWorld(float cx, float cy, float cz) {
 
-		Vector2f transVector = new Vector2f(cam.getDirection().x,
-				cam.getDirection().z);
+		Vector2f transVector = new Vector2f(this.cam.getDirection().x,
+				this.cam.getDirection().z);
 
-		worldNode.setLocalTranslation(worldNode
+		this.worldNode.setLocalTranslation(this.worldNode
 				.getLocalTranslation()
 				.addLocal(
 						new Vector3f(-cz * transVector.x, 0f, -cz
@@ -299,11 +341,11 @@ public class HexRenderer extends SimpleApplication {
 	private void rotateCamera(float value, Vector3f axis) {
 
 		Matrix3f mat = new Matrix3f();
-		mat.fromAngleNormalAxis(rotationSpeed * value, axis);
+		mat.fromAngleNormalAxis(this.rotationSpeed * value, axis);
 
-		Vector3f up = cam.getUp();
-		Vector3f left = cam.getLeft();
-		Vector3f dir = cam.getDirection();
+		Vector3f up = this.cam.getUp();
+		Vector3f left = this.cam.getLeft();
+		Vector3f dir = this.cam.getDirection();
 
 		mat.mult(up, up);
 		mat.mult(left, left);
@@ -313,100 +355,104 @@ public class HexRenderer extends SimpleApplication {
 		q.fromAxes(left, up, dir);
 		q.normalizeLocal();
 
-		cam.setAxes(q);
+		this.cam.setAxes(q);
 
-		spot.setDirection(cam.getDirection());
+		this.spot.setDirection(this.cam.getDirection());
 	}
 
 	/**
 	 * Set up key bindings and event listeners for key bindings
 	 */
 	private void initKeyBindings() {
-		inputManager.addMapping("Jump", new KeyTrigger(KeyInput.KEY_SPACE));
-		inputManager.addMapping("Down", new KeyTrigger(KeyInput.KEY_LSHIFT));
-		inputManager.addMapping("Left", new KeyTrigger(KeyInput.KEY_A));
-		inputManager.addMapping("Right", new KeyTrigger(KeyInput.KEY_D));
-		inputManager.addMapping("Forward", new KeyTrigger(KeyInput.KEY_W));
-		inputManager.addMapping("Back", new KeyTrigger(KeyInput.KEY_S));
+		this.inputManager
+				.addMapping("Jump", new KeyTrigger(KeyInput.KEY_SPACE));
+		this.inputManager.addMapping("Down",
+				new KeyTrigger(KeyInput.KEY_LSHIFT));
+		this.inputManager.addMapping("Left", new KeyTrigger(KeyInput.KEY_A));
+		this.inputManager.addMapping("Right", new KeyTrigger(KeyInput.KEY_D));
+		this.inputManager.addMapping("Forward", new KeyTrigger(KeyInput.KEY_W));
+		this.inputManager.addMapping("Back", new KeyTrigger(KeyInput.KEY_S));
 
-		inputManager.addMapping("CAM_Left", new MouseAxisTrigger(
+		this.inputManager.addMapping("CAM_Left", new MouseAxisTrigger(
 				MouseInput.AXIS_X, true), new KeyTrigger(KeyInput.KEY_LEFT));
 
-		inputManager.addMapping("CAM_Right", new MouseAxisTrigger(
+		this.inputManager.addMapping("CAM_Right", new MouseAxisTrigger(
 				MouseInput.AXIS_X, false), new KeyTrigger(KeyInput.KEY_RIGHT));
 
-		inputManager.addMapping("CAM_Up", new MouseAxisTrigger(
+		this.inputManager.addMapping("CAM_Up", new MouseAxisTrigger(
 				MouseInput.AXIS_Y, false), new KeyTrigger(KeyInput.KEY_UP));
 
-		inputManager.addMapping("CAM_Down", new MouseAxisTrigger(
+		this.inputManager.addMapping("CAM_Down", new MouseAxisTrigger(
 				MouseInput.AXIS_Y, true), new KeyTrigger(KeyInput.KEY_DOWN));
 
-		inputManager.addListener(actionListener, "Jump");
-		inputManager.addListener(actionListener, "Down");
-		inputManager.addListener(actionListener, "Left");
-		inputManager.addListener(actionListener, "Right");
-		inputManager.addListener(actionListener, "Forward");
-		inputManager.addListener(actionListener, "Back");
-		inputManager.addListener(analogListener, "CAM_Left");
-		inputManager.addListener(analogListener, "CAM_Right");
-		inputManager.addListener(analogListener, "CAM_Up");
-		inputManager.addListener(analogListener, "CAM_Down");
+		this.inputManager.addListener(this.actionListener, "Jump");
+		this.inputManager.addListener(this.actionListener, "Down");
+		this.inputManager.addListener(this.actionListener, "Left");
+		this.inputManager.addListener(this.actionListener, "Right");
+		this.inputManager.addListener(this.actionListener, "Forward");
+		this.inputManager.addListener(this.actionListener, "Back");
+		this.inputManager.addListener(this.analogListener, "CAM_Left");
+		this.inputManager.addListener(this.analogListener, "CAM_Right");
+		this.inputManager.addListener(this.analogListener, "CAM_Up");
+		this.inputManager.addListener(this.analogListener, "CAM_Down");
 	}
 
 	private AnalogListener analogListener = new AnalogListener() {
 
 		public void onAnalog(String name, float value, float tpf) {
 			if (name.equals("CAM_Left")) {
-				rotateCamera(value, initialUpVec);
+				rotateCamera(value, HexRenderer.this.initialUpVec);
 			} else if (name.equals("CAM_Right")) {
-				rotateCamera(-value, initialUpVec);
+				rotateCamera(-value, HexRenderer.this.initialUpVec);
 			} else if (name.equals("CAM_Up")) {
-				rotateCamera(-value * (invertY ? -1 : 1), cam.getLeft());
+				rotateCamera(-value * (HexRenderer.this.invertY ? -1 : 1),
+						HexRenderer.this.cam.getLeft());
 			} else if (name.equals("CAM_Down")) {
-				rotateCamera(value * (invertY ? -1 : 1), cam.getLeft());
+				rotateCamera(value * (HexRenderer.this.invertY ? -1 : 1),
+						HexRenderer.this.cam.getLeft());
 			}
 		}
 	};
 	private ActionListener actionListener = new ActionListener() {
 		public void onAction(String name, boolean keyPressed, float tpf) {
 			if (name.equals("Jump") && keyPressed/* && jumpSpeed == 0 */) {
-				locChanges[1] = 2f;
+				HexRenderer.this.locChanges[1] = 2f;
 			} else if (name.equals("Jump") && !keyPressed) {
-				locChanges[1] = 0f;
+				HexRenderer.this.locChanges[1] = 0f;
 			}
 
 			if (name.equals("Down") && keyPressed) {
-				locChanges[1] = -2f;
+				HexRenderer.this.locChanges[1] = -2f;
 			} else if (name.equals("Down") && !keyPressed) {
-				locChanges[1] = 0f;
+				HexRenderer.this.locChanges[1] = 0f;
 			}
 
 			if (name.equals("Left") && keyPressed) {
-				locChanges[0] = speed;
+				HexRenderer.this.locChanges[0] = speed;
 			} else if (name.equals("Left") && !keyPressed
-					&& locChanges[0] == speed) {
-				locChanges[0] = 0;
+					&& HexRenderer.this.locChanges[0] == speed) {
+				HexRenderer.this.locChanges[0] = 0;
 			}
 
 			if (name.equals("Right") && keyPressed) {
-				locChanges[0] = -speed;
+				HexRenderer.this.locChanges[0] = -speed;
 			} else if (name.equals("Right") && !keyPressed
-					&& locChanges[0] == -speed) {
-				locChanges[0] = 0;
+					&& HexRenderer.this.locChanges[0] == -speed) {
+				HexRenderer.this.locChanges[0] = 0;
 			}
 
 			if (name.equals("Forward") && keyPressed) {
-				locChanges[2] = speed;
+				HexRenderer.this.locChanges[2] = speed;
 			} else if (name.equals("Forward") && !keyPressed
-					&& locChanges[2] == speed) {
-				locChanges[2] = 0;
+					&& HexRenderer.this.locChanges[2] == speed) {
+				HexRenderer.this.locChanges[2] = 0;
 			}
 
 			if (name.equals("Back") && keyPressed) {
-				locChanges[2] = -speed;
+				HexRenderer.this.locChanges[2] = -speed;
 			} else if (name.equals("Back") && !keyPressed
-					&& locChanges[2] == -speed) {
-				locChanges[2] = 0;
+					&& HexRenderer.this.locChanges[2] == -speed) {
+				HexRenderer.this.locChanges[2] = 0;
 			}
 		}
 	};
