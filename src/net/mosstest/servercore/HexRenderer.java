@@ -19,6 +19,7 @@ import com.jme3.input.controls.MouseAxisTrigger;
 import com.jme3.light.DirectionalLight;
 import com.jme3.light.SpotLight;
 import com.jme3.material.Material;
+import com.jme3.material.RenderState.FaceCullMode;
 import com.jme3.math.FastMath;
 import com.jme3.math.Matrix3f;
 import com.jme3.math.Quaternion;
@@ -181,7 +182,8 @@ public class HexRenderer extends SimpleApplication {
 		indices.rewind();
 		for (byte i = 0; i < 16; i++) {
 			for (byte j = 0; j < 16; j++) {
-				for (byte k = 0; k < 16; k++) {
+				testLoop:for (byte k = 0; k < 16; k++) {
+					if(Math.random()>0.02) continue testLoop;
 					int nVal = chk.getNodeId(i, j, k);
 					// MapNode node = nManager.getNode((short) nVal);
 					// Material mat = getMaterial((short) nVal);
@@ -242,8 +244,10 @@ public class HexRenderer extends SimpleApplication {
 		bigMesh.setBuffer(Type.Position, 3, HexRenderer.vertexBuffer);
 		bigMesh.setBuffer(Type.TexCoord, 2, tcoords);
 		bigMesh.setBuffer(Type.Index, 3, indices);
+		
 		bigMesh.updateBound();
 		Geometry geom = new Geometry("chunkMesh", bigMesh);
+		//mat.getAdditionalRenderState().setFaceCullMode(FaceCullMode.Off);
 		geom.setMaterial(mat);
 		this.worldNode.attachChild(geom);
 		/*
@@ -310,13 +314,13 @@ public class HexRenderer extends SimpleApplication {
 		Material mat = null;
 		switch (nVal) {
 		case 1:
-			mat = new Material(this.assetManager,
+			/*mat = new Material(this.assetManager,
 					"Common/MatDefs/Light/Lighting.j3md");
 			mat.setBoolean("UseMaterialColors", true);
 			mat.setColor("Ambient", ColorRGBA.Green);
-			mat.setColor("Diffuse", ColorRGBA.Red);
-			/*mat = new Material(this.assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-			mat.setColor("Color", ColorRGBA.Red);*/
+			mat.setColor("Diffuse", ColorRGBA.Red);*/
+			mat = new Material(this.assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+			mat.setColor("Color", ColorRGBA.Red);
 		}
 		return mat;
 	}
