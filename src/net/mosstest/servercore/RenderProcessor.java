@@ -72,6 +72,7 @@ public class RenderProcessor extends SimpleApplication {
 		settings.setSamples(2);
 		settings.setFullscreen(false);
 		app.setSettings(settings);
+		
 		app.setShowSettings(false);
 		app.initNodeManager(manager);
 		app.initPreparator(preparator);
