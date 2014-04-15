@@ -146,6 +146,7 @@ public class LocalRenderPreparator implements IRenderPreparator {
 
         logger.info(Messages
                 .getString("LocalRenderPreparator.START_MSG")); //$NON-NLS-1$
+        this.lookupThread.setDaemon(true);
         this.lookupThread.start();
 
     }

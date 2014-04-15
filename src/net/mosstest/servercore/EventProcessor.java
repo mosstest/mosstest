@@ -174,6 +174,7 @@ public class EventProcessor {
                                         }
 
                                     });
+                            threads[c].setDaemon(true);
                             threads[c].start();
 
                             EventProcessor.this.currentThreads.incrementAndGet();
@@ -221,6 +222,8 @@ public class EventProcessor {
                         }
                     }
                 }, Messages.getString("EventProcessor.THREAD_NAME_MGR"));
+
+        manager.setDaemon(true);
         manager.start();
 
     }
