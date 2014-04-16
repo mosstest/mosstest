@@ -65,7 +65,7 @@ public class MossInventory extends AbstractByteArrayStorable<ItemManager> {
         bos.flush();
         } catch (IOException e) {
             // This should never happen in real life
-            logger.error("IOException serializing an inventory. This should not happen, if it does a bug should be filed");
+            logger.fatal("IOException serializing an inventory. This should not happen, if it does a bug should be filed");
         }
         return bos.toByteArray();
     }
@@ -100,16 +100,20 @@ public class MossInventory extends AbstractByteArrayStorable<ItemManager> {
 
 
     public synchronized double addItem(MossItem.Stack stack) {
+        return addItem(stack, stack.item.stackMode);
+    }
+
+    public synchronized double addItem(MossItem.Stack stack, MossItem.StackMode stackMode) {
         double added = 0;
         for (int row = 0; row < this.stacks.length; row++) {
             for (int col = 0; col < this.stacks[row].length; col++) {
                 if (this.stacks[row][col] == null) {
-                    double addedThisRound = MossItem.Stack.getMaxSize(stack.item.stackMode, stack.amount - added, this.maxStackSize);
+                    double addedThisRound = MossItem.Stack.getMaxSize(stackMode, stack.amount - added, this.maxStackSize);
                     added += addedThisRound;
                     this.stacks[row][col] = new MossItem.Stack(stack.item,
                             addedThisRound);
                 } else if (this.stacks[row][col].item.equals(stack.item)) {
-                    double addedThisRound = this.stacks[row][col].getAddable(stack.item.stackMode, stack.amount - added, this.maxStackSize);
+                    double addedThisRound = this.stacks[row][col].getAddable(stackMode, stack.amount - added, this.maxStackSize);
                     added += addedThisRound;
                     this.stacks[row][col].amount += addedThisRound;
                 }
@@ -122,11 +126,15 @@ public class MossInventory extends AbstractByteArrayStorable<ItemManager> {
     }
 
     public synchronized MossItem.Stack removeItem(MossItem.Stack stack) {
+        return removeItem(stack, stack.item.stackMode);
+    }
+
+    public synchronized MossItem.Stack removeItem(MossItem.Stack stack, MossItem.StackMode stackMode) {
         double removed = 0;
         for (int row = 0; row < this.stacks.length; row++)
             for (int col = 0; col < this.stacks[row].length; col++) {
                 if (this.stacks[row][col].item.equals(stack.item)) {
-                    double removedThisRound = this.stacks[row][col].getRemovable(stack.item.stackMode, stack.amount - removed);
+                    double removedThisRound = this.stacks[row][col].getRemovable(stackMode, stack.amount - removed);
                     removed += removedThisRound;
                     if (this.stacks[row][col].amount != removedThisRound)
                         this.stacks[row][col].amount -= removedThisRound;
