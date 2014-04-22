@@ -1,4 +1,7 @@
-package net.mosstest.servercore;
+package net.mosstest.netclient;
+
+import net.mosstest.servercore.ApplicationLevelNetworkingManager;
+import net.mosstest.servercore.EngineSettings;
 
 import java.io.IOException;
 

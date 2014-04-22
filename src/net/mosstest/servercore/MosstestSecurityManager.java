@@ -373,7 +373,7 @@ public class MosstestSecurityManager extends SecurityManager {
             ThreadContext oldTc = MosstestSecurityManager.this
                     .getThreadContext();
             Object oldLock = MosstestSecurityManager.this.forceUnlock();
-            File tested;
+           // File tested;
 //            try {
 //
 //

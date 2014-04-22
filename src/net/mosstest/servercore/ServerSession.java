@@ -1,5 +1,6 @@
 package net.mosstest.servercore;
 
+import net.mosstest.netclient.MossNetPacket;
 import net.mosstest.scripting.Player;
 
 import java.net.DatagramSocket;

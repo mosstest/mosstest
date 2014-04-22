@@ -1,5 +1,7 @@
-package net.mosstest.servercore;
+package net.mosstest.netclient;
 
+import net.mosstest.servercore.CommonNetworking;
+import net.mosstest.servercore.Messages;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -84,7 +86,7 @@ public class ClientNetworkingManager {
     /**
      * The endpoint.
      */
-    protected final InetAddress endpoint;
+    protected InetAddress endpoint;
 
     /**
      * The port.
@@ -133,95 +135,87 @@ public class ClientNetworkingManager {
     /**
      * The bulk read handler.
      */
-    protected Thread bulkReadHandler = new Thread(new Runnable() {
+    protected Thread bulkReadHandler = new Thread(() -> {
+        try {
+            recvLoop:
+            while (ClientNetworkingManager.this.runThreads.get()) {
 
-        @Override
-        public void run() {
-
-            try {
-                recvLoop:
-                while (ClientNetworkingManager.this.runThreads.get()) {
-
-                    if (ClientNetworkingManager.this.bulkDataIn.readInt() != CommonNetworking.magic) {
-                        // TODO Handle reconnect
-                    }
-
-                    int length = ClientNetworkingManager.this.bulkDataIn
-                            .readShort();
-                    byte[] buf = new byte[length];
-
-                    int commandId = ClientNetworkingManager.this.bulkDataIn
-                            .readUnsignedByte();
-                    if (commandId == CMD_QUENCH) {
-                        ClientNetworkingManager.this.partyQuenched.set(true);
-                        continue recvLoop;
-                    }
-
-                    ClientNetworkingManager.this.bulkStreamIn.read(buf);
-                    if (commandId == 254) {
-                        ClientNetworkingManager.this.fastLinkAckd.set(true);
-                        sendPacketLowLatency(254, buf);
-                        sendPacketUdp(254, buf, true);
-                        continue recvLoop;
-                    }
-                    ClientNetworkingManager.this.packets.add(new MossNetPacket(
-                            commandId, buf));
-                    ClientNetworkingManager.this.lastBulkIn.set(System
-                            .currentTimeMillis());
-                    if (ClientNetworkingManager.this.packets
-                            .remainingCapacity() < QUENCH_CAPACITY_REMAINING)
-                        sendQuench();
+                if (ClientNetworkingManager.this.bulkDataIn.readInt() != CommonNetworking.magic) {
+                    // TODO Handle reconnect
                 }
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
 
+                int length = ClientNetworkingManager.this.bulkDataIn
+                        .readShort();
+                byte[] buf = new byte[length];
+
+                int commandId = ClientNetworkingManager.this.bulkDataIn
+                        .readUnsignedByte();
+                if (commandId == CMD_QUENCH) {
+                    ClientNetworkingManager.this.partyQuenched.set(true);
+                    continue recvLoop;
+                }
+
+                ClientNetworkingManager.this.bulkStreamIn.read(buf);
+                if (commandId == 254) {
+                    ClientNetworkingManager.this.fastLinkAckd.set(true);
+                    sendPacketLowLatency(254, buf);
+                    sendPacketUdp(254, buf, true);
+                    continue recvLoop;
+                }
+                ClientNetworkingManager.this.packets.add(new MossNetPacket(
+                        commandId, buf));
+                ClientNetworkingManager.this.lastBulkIn.set(System
+                        .currentTimeMillis());
+                if (ClientNetworkingManager.this.packets
+                        .remainingCapacity() < QUENCH_CAPACITY_REMAINING)
+                    sendQuench();
+            }
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
+
+
     }, "ClientBulkRecv"); //$NON-NLS-1$
 
     /**
      * The fast read handler.
      */
-    protected Thread fastReadHandler = new Thread(new Runnable() {
-        // TODO
-        @Override
-        public void run() {
+    protected Thread fastReadHandler = new Thread(() -> {
+        try {
+            recvLoop:
+            while (ClientNetworkingManager.this.runThreads.get()) {
 
-            try {
-                recvLoop:
-                while (ClientNetworkingManager.this.runThreads.get()) {
-
-                    if (ClientNetworkingManager.this.lowlatencyDataIn.readInt() != CommonNetworking.magic) {
-                        // TODO Handle reconnect
-                    }
-                    int length = ClientNetworkingManager.this.lowlatencyDataIn
-                            .readShort();
-                    byte[] buf = new byte[length];
-
-                    int commandId = ClientNetworkingManager.this.lowlatencyDataIn
-                            .readUnsignedByte();
-                    if (commandId == CMD_QUENCH) {
-                        ClientNetworkingManager.this.partyQuenched.set(true);
-                        continue recvLoop;
-                    }
-                    ClientNetworkingManager.this.fastStreamIn.read(buf);
-                    ClientNetworkingManager.this.packets.add(new MossNetPacket(
-                            commandId, buf));
-                    ClientNetworkingManager.this.lastFastIn.set(System
-                            .currentTimeMillis());
-                    ClientNetworkingManager.this.packets.add(new MossNetPacket(
-                            commandId, buf));
-                    if (ClientNetworkingManager.this.packets
-                            .remainingCapacity() < QUENCH_CAPACITY_REMAINING)
-                        sendQuench();
+                if (ClientNetworkingManager.this.lowlatencyDataIn.readInt() != CommonNetworking.magic) {
+                    // TODO Handle reconnect
                 }
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+                int length = ClientNetworkingManager.this.lowlatencyDataIn
+                        .readShort();
+                byte[] buf = new byte[length];
 
+                int commandId = ClientNetworkingManager.this.lowlatencyDataIn
+                        .readUnsignedByte();
+                if (commandId == CMD_QUENCH) {
+                    ClientNetworkingManager.this.partyQuenched.set(true);
+                    continue recvLoop;
+                }
+                ClientNetworkingManager.this.fastStreamIn.read(buf);
+                ClientNetworkingManager.this.packets.add(new MossNetPacket(
+                        commandId, buf));
+                ClientNetworkingManager.this.lastFastIn.set(System
+                        .currentTimeMillis());
+                ClientNetworkingManager.this.packets.add(new MossNetPacket(
+                        commandId, buf));
+                if (ClientNetworkingManager.this.packets
+                        .remainingCapacity() < QUENCH_CAPACITY_REMAINING)
+                    sendQuench();
+            }
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
+
+
     }, "ClientBulkRecv"); //$NON-NLS-1$
 
     /**
@@ -237,52 +231,49 @@ public class ClientNetworkingManager {
     /**
      * The dgram read handler.
      */
-    protected Thread dgramReadHandler = new Thread(new Runnable() {
-        // TODO--spanish for "all"
-        @Override
-        public void run() {
+    protected Thread dgramReadHandler = new Thread(() -> {
 
-            recvLoop:
-            while (ClientNetworkingManager.this.runThreads.get()) {
-                byte[] buf = new byte[270]; // above the size for a maximum dgram packet
-                DatagramPacket pckt = new DatagramPacket(buf, 270);
-                try {
-                    ClientNetworkingManager.this.udpSocket.receive(pckt);
-                    ByteArrayInputStream bufStr = new ByteArrayInputStream(
-                            pckt.getData());
-                    if (!pckt.getAddress().equals(
-                            ClientNetworkingManager.this.endpoint)) {
-                        logger.warn("A UDP packet was received with a mismatched origin IP."); //$NON-NLS-1$
-                        continue recvLoop;
-                    }
-                    DataInputStream dos = new DataInputStream(bufStr);
-                    int magic = dos.readInt();
-
-                    if (magic == CommonNetworking.magic)
-                        sendAck(dos.readUnsignedShort());
-                    if (!(magic == CommonNetworking.magic || magic == CommonNetworking.magicNoAck)) {
-                        logger.warn("A packet was received with an invalid magic number and has been dropped.");
-                        continue recvLoop;
-                    }
-                    int length = dos.readUnsignedByte();
-                    int commandId = dos.readUnsignedByte();
-                    if (commandId == CMD_QUENCH) {
-                        ClientNetworkingManager.this.partyQuenched.set(true);
-                        continue recvLoop;
-                    }
-                    byte[] pBuf = new byte[length];
-                    bufStr.read(pBuf);
-                    ClientNetworkingManager.this.lastUdpIn.set(System
-                            .currentTimeMillis());
-                    ClientNetworkingManager.this.packets.add(new MossNetPacket(
-                            commandId, pBuf));
-
-                } catch (IOException e) {
-                    ClientNetworkingManager.this.udpOn = false;
+        recvLoop:
+        while (ClientNetworkingManager.this.runThreads.get()) {
+            byte[] buf = new byte[270]; // above the size for a maximum dgram packet
+            DatagramPacket pckt = new DatagramPacket(buf, 270);
+            try {
+                ClientNetworkingManager.this.udpSocket.receive(pckt);
+                ByteArrayInputStream bufStr = new ByteArrayInputStream(
+                        pckt.getData());
+                if (!pckt.getAddress().equals(
+                        ClientNetworkingManager.this.endpoint)) {
+                    logger.warn("A UDP packet was received with a mismatched origin IP."); //$NON-NLS-1$
+                    continue recvLoop;
                 }
-            }
+                DataInputStream dos = new DataInputStream(bufStr);
+                int magic = dos.readInt();
 
+                if (magic == CommonNetworking.magic)
+                    sendAck(dos.readUnsignedShort());
+                if (!(magic == CommonNetworking.magic || magic == CommonNetworking.magicNoAck)) {
+                    logger.warn("A packet was received with an invalid magic number and has been dropped.");
+                    continue recvLoop;
+                }
+                int length = dos.readUnsignedByte();
+                int commandId = dos.readUnsignedByte();
+                if (commandId == CMD_QUENCH) {
+                    ClientNetworkingManager.this.partyQuenched.set(true);
+                    continue recvLoop;
+                }
+                byte[] pBuf = new byte[length];
+                bufStr.read(pBuf);
+                ClientNetworkingManager.this.lastUdpIn.set(System
+                        .currentTimeMillis());
+                ClientNetworkingManager.this.packets.add(new MossNetPacket(
+                        commandId, pBuf));
+
+            } catch (IOException e) {
+                ClientNetworkingManager.this.udpOn = false;
+            }
         }
+
+
     }, "ClientDgramRecv"); //$NON-NLS-1$
 
     /**
@@ -351,7 +342,7 @@ public class ClientNetworkingManager {
         this.bulkReadHandler.start();
         this.fastReadHandler.start();
         this.dgramReadHandler.start();
-		/* The send queue thread. */
+        /* The send queue thread. */
         Thread sendQueueThread = new Thread(new Runnable() {
 
             @Override
@@ -367,7 +358,7 @@ public class ClientNetworkingManager {
             }
         }, Messages.getString("ClientNetworkingManager.THREAD_QUEUEING"));
         sendQueueThread.start();
-		/* The net timeout thread. */
+        /* The net timeout thread. */
         Thread netTimeoutThread = new Thread(new Runnable() {
 
             @Override
@@ -433,7 +424,13 @@ public class ClientNetworkingManager {
                                                                         ClientNetworkingManager.this.lastUdpOut
                                                                                 .get(),
                                                                         ClientNetworkingManager.this.quenchedSince
-                                                                                .get())))))));
+                                                                                .get()
+                                                                )
+                                                        )
+                                                )
+                                        )
+                                )
+                        ));
                     } catch (InterruptedException e) {
                         // pass
                     }

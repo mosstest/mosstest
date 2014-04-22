@@ -1,5 +1,6 @@
 package net.mosstest.servercore;
 
+import net.mosstest.netclient.ClientNetworkingManager;
 import net.mosstest.scripting.Position;
 
 // TODO: Auto-generated Javadoc

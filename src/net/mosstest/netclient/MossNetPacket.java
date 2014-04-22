@@ -1,6 +1,8 @@
-package net.mosstest.servercore;
+package net.mosstest.netclient;
 
 // TODO: Auto-generated Javadoc
+
+import net.mosstest.servercore.ServerSession;
 
 import java.util.Arrays;
 
@@ -12,27 +14,27 @@ public class MossNetPacket {
     /**
      * The command id.
      */
-    int commandId;
+    public final int commandId;
 
     /**
      * The payload.
      */
-    byte[] payload;
+    public final byte[] payload;
 
     /**
      * The needs fast.
      */
-    boolean needsFast;
+    public final boolean needsFast;
 
     /**
      * The needs ack.
      */
-    boolean needsAck;
+    public final boolean needsAck;
 
     /**
      * The is important.
      */
-    boolean isImportant;
+    public final boolean isImportant;
 
     /**
      * The sess.

@@ -1,4 +1,4 @@
-package net.mosstest.servercore;
+package net.mosstest.netclient;
 
 // TODO: Auto-generated Javadoc
 /**
