@@ -1,13 +1,10 @@
 package net.mosstest.servercore;
 
 import net.mosstest.scripting.Player;
-import net.mosstest.servercore.serialization.IByteArrayWriteable;
-import org.apache.commons.lang.NotImplementedException;
-
-import java.io.IOException;
+import net.mosstest.servercore.serialization.IByteArrayWritable;
 
 public class InventoryManager {
-    public class PlayerKey implements IByteArrayWriteable {
+    public class PlayerKey implements IByteArrayWritable {
         private final Player player;
 
         private final String inventory;

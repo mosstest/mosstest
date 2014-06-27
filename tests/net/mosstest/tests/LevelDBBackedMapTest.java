@@ -2,7 +2,7 @@ package net.mosstest.tests;
 
 import net.mosstest.scripting.MapChunk;
 import net.mosstest.scripting.Position;
-import net.mosstest.servercore.serialization.IByteArrayWriteable;
+import net.mosstest.servercore.serialization.IByteArrayWritable;
 import net.mosstest.servercore.serialization.LevelDBBackedMap;
 import net.mosstest.servercore.MapGeneratorException;
 import org.junit.Test;
@@ -39,7 +39,7 @@ public class LevelDBBackedMapTest {
     }
 
 
-    public static class TestByteArrayStorable implements IByteArrayWriteable{
+    public static class TestByteArrayStorable implements IByteArrayWritable {
         byte[] buf;
 
         public TestByteArrayStorable(byte[] buf) {

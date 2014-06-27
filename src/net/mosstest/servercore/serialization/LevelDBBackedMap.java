@@ -19,7 +19,7 @@ import java.util.concurrent.ExecutionException;
  * @param <V> Values to be stored
  */
 // V need not extend any sort of marker interface, having a proper constructor passed in takes care of that.
-public class LevelDBBackedMap<K extends IByteArrayWriteable, V extends IByteArrayWriteable> implements Map<K, V> {
+public class LevelDBBackedMap<K extends IByteArrayWritable, V extends IByteArrayWritable> implements Map<K, V> {
     // TODO a map backed by a levelDB datastore
 
     // the in-memory cache
@@ -93,8 +93,8 @@ public class LevelDBBackedMap<K extends IByteArrayWriteable, V extends IByteArra
     public V remove(Object key) {
         this.memoryBackingCache.invalidate(key);
         this.memoryBackingCache.asMap().remove(key);
-        if (key instanceof IByteArrayWriteable)
-            this.diskBackingDatastore.delete(((IByteArrayWriteable) key).toBytes());
+        if (key instanceof IByteArrayWritable)
+            this.diskBackingDatastore.delete(((IByteArrayWritable) key).toBytes());
         return null;
     }
 
@@ -212,7 +212,7 @@ public class LevelDBBackedMap<K extends IByteArrayWriteable, V extends IByteArra
         }
     }
 
-    public static class ManagedMap<K extends IByteArrayWriteable, V extends IByteArrayWriteable & IManaged<M>, M> extends LevelDBBackedMap<K, V> {
+    public static class ManagedMap<K extends IByteArrayWritable, V extends IByteArrayWritable & IManaged<M>, M> extends LevelDBBackedMap<K, V> {
         protected M manager;
 
         public ManagedMap(DB diskBackingDatastore, IByteArrayConstructor<V> constructor, M manager) {
@@ -241,5 +241,3 @@ public class LevelDBBackedMap<K extends IByteArrayWriteable, V extends IByteArra
         }
     }
 }
-
-

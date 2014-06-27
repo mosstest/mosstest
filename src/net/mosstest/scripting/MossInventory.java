@@ -2,7 +2,7 @@ package net.mosstest.scripting;
 
 import net.mosstest.servercore.ItemManager;
 import net.mosstest.servercore.MosstestFatalDeathException;
-import net.mosstest.servercore.serialization.IByteArrayWriteable;
+import net.mosstest.servercore.serialization.IByteArrayWritable;
 import net.mosstest.servercore.serialization.IManaged;
 import org.apache.log4j.Logger;
 
@@ -13,7 +13,7 @@ import java.io.*;
 /**
  * The Class MossInventory.
  */
-public class MossInventory implements IByteArrayWriteable, IManaged<ItemManager> {
+public class MossInventory implements IByteArrayWritable, IManaged<ItemManager> {
 
     private ItemManager im;
 

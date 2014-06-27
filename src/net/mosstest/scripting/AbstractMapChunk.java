@@ -1,8 +1,8 @@
 package net.mosstest.scripting;
 
-import net.mosstest.servercore.serialization.IByteArrayWriteable;
+import net.mosstest.servercore.serialization.IByteArrayWritable;
 
-public abstract class AbstractMapChunk implements IByteArrayWriteable {
+public abstract class AbstractMapChunk implements IByteArrayWritable {
     int CHUNK_DIMENSION = 16;
 
     @Override
