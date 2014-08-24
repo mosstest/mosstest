@@ -32,68 +32,25 @@ public class ServerSession {
      */
     public ArrayBlockingQueue<MossNetPacket> packets;
 
-    /**
-     * The bulk socket.
-     */
-    public volatile Socket bulkSocket;
-
-    /**
-     * The fast socket.
-     */
-    public volatile Socket fastSocket;
-
-    /**
-     * The dgram socket.
-     */
-    public volatile DatagramSocket dgramSocket;
-
-    /**
-     * The is valid.
-     */
-    public AtomicBoolean isValid = new AtomicBoolean(true);
-
-    /**
-     * The state.
-     */
-    public ServerSession.State state;
-
-    /**
-     * The quenched since.
-     */
-    public volatile long quenchedSince = 0;
 
     /**
      * The Enum State.
      */
     public static enum State {
 
-        /**
-         * The conn new.
-         */
+
         CONN_NEW,
-        /**
-         * The conn auth sent.
-         */
+
         CONN_AUTH_SENT,
-        /**
-         * The conn auth recv.
-         */
+
         CONN_AUTH_RECV,
-        /**
-         * The conn game handshake.
-         */
+
         CONN_GAME_HANDSHAKE,
-        /**
-         * The conn playing.
-         */
+
         CONN_PLAYING,
-        /**
-         * The conn bot.
-         */
+
         CONN_BOT,
-        /**
-         * The conn timeout.
-         */
+
         CONN_TIMEOUT
     }
 }
