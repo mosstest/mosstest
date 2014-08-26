@@ -6,9 +6,11 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;// TODO: Auto-generated Javadoc
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.handler.codec.ReplayingDecoder;
-import io.netty.util.AttributeKey;
+import net.mosstest.netcommand.ToServerHello;
 import org.apache.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import java.text.MessageFormat;
 import java.util.List;
@@ -16,13 +18,17 @@ import java.util.List;
 /**
  * Server networking manager. Now using Netty.
  *
- * @author rarkenin
+ * @author hexafraction
  */
 public class ServerNetworkingManager {
     private static final Logger logger = Logger.getLogger(ServerNetworkingManager.class);
+    // Surpressed for now, as we don't use the field yet.
+    @SuppressWarnings("FieldCanBeLocal")
     private final MossWorld world;
     private final int port;
 
+    // TODO actually use this class
+    @SuppressWarnings("WeakerAccess")
     public ServerNetworkingManager(int port, MossWorld world) {
         this.port = port;
         this.world = world;
@@ -40,10 +46,18 @@ public class ServerNetworkingManager {
                         @Override
                         protected void initChannel(SocketChannel sch) throws Exception {
                             logger.info(MessageFormat.format(Messages.getString("SCH_INITIALIZED"), sch.remoteAddress()));
-                            // is passing sch to the SNVMessageHandler hacky? Could I get a context later?
-                            sch.pipeline().addLast(new StreamToPacketDecoder());
-                            sch.pipeline().addLast(new PacketToPojoDecoder());
-                            sch.pipeline().addLast(new ApplicationLevelMessageHandler(sch));
+
+                            /*
+                             * The following subsystem handlers will be included:
+                             * Connection state
+                             * Event processor actions
+                             * Relayable actions (e.g. player move)
+                             * File requests
+                             * Script requests
+                             */
+                            sch.pipeline()
+                                    .addLast(new StreamToPacketDecoder())
+                                    .addLast(new ConnectionStateMessageDecoder());
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG, 128)
@@ -59,24 +73,6 @@ public class ServerNetworkingManager {
         }
     }
 
-    //TODO this class
-    private class ApplicationLevelMessageHandler extends ChannelHandlerAdapter {
-        public ApplicationLevelMessageHandler(SocketChannel sch) {
-            ServerSession sess = new ServerSession();
-            sch.attr(AttributeKey.<ServerSession>valueOf("session")).set(sess);
-        }
-
-        @Override
-        public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-
-        }
-
-        @Override
-        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-            cause.printStackTrace();
-        }
-    }
-
     public enum DecoderState {
         READ_LENGTH,
         READ_CONTENT,
@@ -88,7 +84,7 @@ public class ServerNetworkingManager {
         int length;
         int command;
 
-        protected StreamToPacketDecoder() {
+        StreamToPacketDecoder() {
             super(DecoderState.READ_LENGTH);
 
 
@@ -99,7 +95,7 @@ public class ServerNetworkingManager {
             switch (state()) {
                 case READ_MAGIC:
                     int magic = in.readInt();
-                    if (magic != CommonNetworking.magic) {
+                    if (magic != CommonNetworking.MAGIC) {
                         logger.error(MessageFormat.format(Messages.getString("BAD_MAGIC_RMT"), ctx.channel().remoteAddress()));
                         ctx.close();
                     }
@@ -121,22 +117,72 @@ public class ServerNetworkingManager {
         }
 
 
-        private class RawMossPacket {
-            int command;
-            ByteBuf frame;
-            public RawMossPacket(int command, ByteBuf frame) {
-                this.command = command;
-                this.frame = frame;
-            }
+    }
+
+    private class RawMossPacket {
+        // these should really be final for immutability.
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            RawMossPacket that = (RawMossPacket) o;
+
+            if (command != that.command) return false;
+            if (!frame.equals(that.frame)) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = command;
+            result = 31 * result + frame.hashCode();
+            return result;
+        }
+
+        final int command;
+        @NotNull
+        final ByteBuf frame;
+
+        public RawMossPacket(int command, @NotNull ByteBuf frame) {
+            this.command = command;
+            this.frame = frame;
         }
     }
 
     public static void main(String[] args) {
+        // test only
         ServerNetworkingManager snm = new ServerNetworkingManager(16511, null);
         snm.start();
     }
 
-    private class PacketToPojoDecoder extends ChannelHandlerAdapter {
+    /**
+     * Handles connection state messages and outputs their respective POJOs.
+     */
+    private class ConnectionStateMessageDecoder extends MessageToMessageDecoder<RawMossPacket> {
+
+        @Override
+        public boolean acceptInboundMessage(Object msg) throws Exception {
+            if ((msg instanceof RawMossPacket)) {
+                if (((RawMossPacket) msg).command == ToServerHello.COMMAND_ID)
+                    return true;
+            }
+            return false;
+        }
+
+        @Override
+        protected void decode(ChannelHandlerContext ctx, RawMossPacket msg, List<Object> out) throws Exception {
+            switch(msg.command){
+                case ToServerHello.COMMAND_ID:
+                    ToServerHello cmd = new ToServerHello(msg.frame);
+                    out.add(cmd);
+                    break;
+            }
+            msg.frame.release();
+        }
+
 
     }
 }

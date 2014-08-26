@@ -1,10 +1,12 @@
 package net.mosstest.netcommand;
 
+import io.netty.buffer.ByteBuf;
+
 /**
  * The Class ToServerCommand.
  */
 public abstract class ToServerCommand {
 
-	//ignore
+	public abstract ByteBuf toBytes();
 
 }

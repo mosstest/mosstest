@@ -148,7 +148,7 @@ public class ClientNetworkingManager {
                 recvLoop:
                 while (ClientNetworkingManager.this.runThreads.get()) {
 
-                    if (ClientNetworkingManager.this.bulkDataIn.readInt() != CommonNetworking.magic) {
+                    if (ClientNetworkingManager.this.bulkDataIn.readInt() != CommonNetworking.MAGIC) {
                         // TODO Handle reconnect
                     }
 
@@ -198,7 +198,7 @@ public class ClientNetworkingManager {
                 recvLoop:
                 while (ClientNetworkingManager.this.runThreads.get()) {
 
-                    if (ClientNetworkingManager.this.lowlatencyDataIn.readInt() != CommonNetworking.magic) {
+                    if (ClientNetworkingManager.this.lowlatencyDataIn.readInt() != CommonNetworking.MAGIC) {
                         // TODO Handle reconnect
                     }
                     int length = ClientNetworkingManager.this.lowlatencyDataIn
@@ -264,9 +264,9 @@ public class ClientNetworkingManager {
                     DataInputStream dos = new DataInputStream(bufStr);
                     int magic = dos.readInt();
 
-                    if (magic == CommonNetworking.magic)
+                    if (magic == CommonNetworking.MAGIC)
                         sendAck(dos.readUnsignedShort());
-                    if (!(magic == CommonNetworking.magic || magic == CommonNetworking.magicNoAck)) {
+                    if (!(magic == CommonNetworking.MAGIC || magic == CommonNetworking.MAGIC_NO_ACK)) {
                         logger.warn(Messages.getString("PACKET_INVALID_MAGIC"));
                         continue recvLoop;
                     }
@@ -514,14 +514,14 @@ public class ClientNetworkingManager {
         this.lastBulkOut.set(System.currentTimeMillis());
         synchronized (this.bulkDataOut) {
             try {
-                this.bulkDataOut.writeInt(CommonNetworking.magic);
+                this.bulkDataOut.writeInt(CommonNetworking.MAGIC);
                 this.bulkDataOut.writeShort(payload.length);
                 this.bulkDataOut.write(commandId);
                 this.bulkDataOut.write(payload);
                 this.bulkDataOut.flush();
             } catch (IOException e) {
                 defaultReinit();
-                this.bulkDataOut.writeInt(CommonNetworking.magic);
+                this.bulkDataOut.writeInt(CommonNetworking.MAGIC);
                 this.bulkDataOut.writeShort(payload.length);
                 this.bulkDataOut.write(commandId);
                 this.bulkDataOut.write(payload);
@@ -577,7 +577,7 @@ public class ClientNetworkingManager {
         } else {
             this.lastFastOut.set(System.currentTimeMillis());
             try {
-                this.lowlatencyDataOut.writeInt(CommonNetworking.magic);
+                this.lowlatencyDataOut.writeInt(CommonNetworking.MAGIC);
                 this.lowlatencyDataOut.writeShort(payload.length);
                 this.lowlatencyDataOut.write(commandId);
                 this.lowlatencyDataOut.flush();
@@ -586,7 +586,7 @@ public class ClientNetworkingManager {
 
             } catch (IOException e) {
                 defaultReinit();
-                this.lowlatencyDataOut.writeInt(CommonNetworking.magic);
+                this.lowlatencyDataOut.writeInt(CommonNetworking.MAGIC);
                 this.lowlatencyDataOut.writeShort(payload.length);
                 this.lowlatencyDataOut.write(commandId);
                 this.lowlatencyDataOut.flush();

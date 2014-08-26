@@ -79,7 +79,7 @@ public class LocalFileManager implements IFileManager {
     }
 
     @Override
-    public void receiveFileChunk(String sha512, int chunkId, ByteBuffer buf) throws IOException {
+    public void receiveFileChunk(String sha256, int chunkId, ByteBuffer buf) throws IOException {
         throw new IOException("This file is read-only due to its being in a non-cache directory.");
     }
 

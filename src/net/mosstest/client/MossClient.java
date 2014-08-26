@@ -35,7 +35,7 @@ public class MossClient {
 
     private ClientDispatcher dispatcher;
 
-    public MossClient(String remoteHost, int port, String username, byte[] pass) throws IOException, InterruptedException {
+    public MossClient(String remoteHost, int port, String username, byte[] pass) throws IOException {
         this.username = username;
         this.password = pass;
         this.state = ClientState.PREPARING;
@@ -44,7 +44,8 @@ public class MossClient {
         this.fileManager.setClient(this);
         this.net = new ClientNetworkingManager(remoteHost, port, false); // so far no UDP
         // we need to send the hello to kick things off
-        this.net.sendPacket(new MossNetPacket(0x01, new ToServerHello(username, PROTOCOL_VERSION, MossScriptEnv.MIN_SCRIPT_API_VERSION, MossScriptEnv.MAX_SCRIPT_API_VERSION).toByteArray()));
+        // This is not happening until we reimplement network handlers with netty on client side.
+        //this.net.sendPacket(new MossNetPacket(0x01, new ToServerHello(username, PROTOCOL_VERSION, MossScriptEnv.MIN_SCRIPT_API_VERSION, MossScriptEnv.MAX_SCRIPT_API_VERSION).toByteArray()));
     }
 
 
