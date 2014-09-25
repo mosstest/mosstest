@@ -7,10 +7,12 @@ import static io.netty.buffer.Unpooled.*;
 /**
  * Created by hexafraction on 8/25/14.
  */
-public class ToServerRequestFile extends ToServerCommand{
+public class ToServerFileRequest extends ToServerCommand{
+    public static final int COMMAND_ID = 0x03;
+
     // sha256 has 256 bits, 8 bits in a byte
     private static final int HASH_LENGTH = 256 / 8;
-    byte[] fileHash;
+    public final byte[] fileHash;
 
     /**
      * Both the deserializing constructor and POJO constructor here would have been, ToServerRequestFile(byte[]).
@@ -19,8 +21,9 @@ public class ToServerRequestFile extends ToServerCommand{
      * This packet class is only provided for consistency.
      * The data must be exactly 32 bytes (256 bits) to match the hash length for a SHA-256 hash.
      */
-    public ToServerRequestFile(byte[] fileHash) {
+    public ToServerFileRequest(byte[] fileHash) throws MalformedPacketException{
         if(fileHash.length!=(HASH_LENGTH))
+            throw new MalformedPacketException(Messages.getString("HASH_WRONG_LENGTH"));
         this.fileHash = fileHash;
     }
 
@@ -29,7 +32,7 @@ public class ToServerRequestFile extends ToServerCommand{
      * The data must be exactly 32 bytes (256 bits) to match the hash length for a SHA-256 hash.
      * @param fileHash
      */
-    public ToServerRequestFile(ByteBuf fileHash) throws MalformedPacketException {
+    public ToServerFileRequest(ByteBuf fileHash) throws MalformedPacketException {
         if(fileHash.readableBytes()!=(HASH_LENGTH))
             throw new MalformedPacketException(Messages.getString("HASH_WRONG_LENGTH"));
         this.fileHash = fileHash.array();

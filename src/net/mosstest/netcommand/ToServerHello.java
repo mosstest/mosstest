@@ -20,6 +20,26 @@ public class ToServerHello extends ToServerCommand {
     private final int minScriptApi;
     private final int maxScriptApi;
 
+    public static Logger getLogger() {
+        return logger;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public int getProtocolVersion() {
+        return protocolVersion;
+    }
+
+    public int getMinScriptApi() {
+        return minScriptApi;
+    }
+
+    public int getMaxScriptApi() {
+        return maxScriptApi;
+    }
+
     /**
      * Constructs a ToServerHello POJO by deserializing the contents of a bytebuffer.
      * The caller is responsible for freeing the buffer.

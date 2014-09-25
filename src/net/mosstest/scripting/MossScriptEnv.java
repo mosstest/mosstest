@@ -1,10 +1,12 @@
 
 package net.mosstest.scripting;
 
+import net.mosstest.scripting.authentication.MossAuthenticator;
 import net.mosstest.scripting.events.IMossEvent;
 import net.mosstest.scripting.handlers.MossEventHandler;
 import net.mosstest.scripting.handlers.MossNodeChangeHandler;
 import net.mosstest.servercore.*;
+import org.apache.commons.lang.NotImplementedException;
 import org.jetbrains.annotations.NonNls;
 
 import java.util.ArrayList;
@@ -355,4 +357,8 @@ public class MossScriptEnv {
 
     }
 
+    public MossAuthenticator getAuthenticator(String username) {
+        throw new NotImplementedException("Need to implement getting an authenticator");
+        //return null;
+    }
 }

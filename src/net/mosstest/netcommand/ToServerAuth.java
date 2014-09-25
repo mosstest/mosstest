@@ -8,7 +8,7 @@ import static io.netty.buffer.Unpooled.*;
  */
 public class ToServerAuth extends ToServerCommand {
     final byte[] authData;
-
+public static final int COMMAND_ID=0x02;
     /**
      * Both the deserializing constructor and POJO constructor here would have been, ToServerAuth(byte[]).
      * Since serialized data is now moving around as ByteBuf's, this is no longer the case.
@@ -31,5 +31,9 @@ public class ToServerAuth extends ToServerCommand {
     @Override
     public ByteBuf toBytes() {
         return unmodifiableBuffer(wrappedBuffer(authData));
+    }
+
+    public byte[] getAuthData() {
+        return authData;
     }
 }

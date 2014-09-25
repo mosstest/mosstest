@@ -1,6 +1,8 @@
 //just keep the same package and import lines
 package net.mosstest.netcommand;
 
+import net.mosstest.scripting.authentication.AuthType;
+
 import java.io.*;
 
 // TODO: Auto-generated Javadoc
@@ -21,30 +23,6 @@ public class ToClientAuthRequested extends ToClientCommand {
      */
     byte[] authParam;
 
-    // create thingies like this for choices
-
-    /**
-     * The Enum AuthType.
-     */
-    public enum AuthType {
-
-        /**
-         * The auth nil.
-         */
-        AUTH_NIL,
-        /**
-         * The auth plain.
-         */
-        AUTH_PLAIN,
-        /**
-         * The AUT h_ has h_ sh a512.
-         */
-        AUTH_HASH_SHA512,
-        /**
-         * The auth challenge response.
-         */
-        AUTH_CHALLENGE_RESPONSE
-    }
 
     // Change the name of the below method to match the file name
 
