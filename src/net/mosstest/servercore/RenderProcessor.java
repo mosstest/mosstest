@@ -1,15 +1,13 @@
 package net.mosstest.servercore;
 
-import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.logging.Level;
 
-import com.jme3.material.RenderState;
-import com.jme3.ui.Picture;
 import jme3tools.optimize.GeometryBatchFactory;
 import net.mosstest.scripting.MapChunk;
+import net.mosstest.scripting.MapNode;
 import net.mosstest.scripting.Player;
 import net.mosstest.scripting.Position;
 import net.mosstest.servercore.FaceRenderer.Face;
@@ -35,7 +33,7 @@ import com.jme3.scene.Mesh;
 import com.jme3.scene.Node;
 import com.jme3.scene.VertexBuffer.Type;
 import com.jme3.system.AppSettings;
-import com.jme3.texture.Texture;
+import com.jme3.ui.Picture;
 
 
 public class RenderProcessor extends SimpleApplication {
@@ -104,22 +102,23 @@ public class RenderProcessor extends SimpleApplication {
 		setupLamplight();
 		setupPlayer();
 		assetManager.registerLocator("scripts", LocalAssetLocator.class);
-        setupHud();
+        //setupHud();
 		flyCam.setEnabled(false);
 		setupListeners(cam.getUp().clone());
 		initKeyBindings();
 		preparatorChunkTest();
 		//blankChunkTest();
 	}
-    private void setupHud() {
+    
+	private void setupHud() {
         Picture pic = new Picture("Crosshair");
         pic.setImage(assetManager, "builtins/crosshair.png", true);
         pic.setWidth(32);
         pic.setHeight(32);
         pic.setPosition(settings.getWidth()/2-16, settings.getHeight()/2-16);
         guiNode.attachChild(pic);
-
     }
+	
 	@Override
 	public void simpleUpdate(float tpf) {
 		if (lastTime + 10 < System.currentTimeMillis()) {
@@ -148,8 +147,8 @@ public class RenderProcessor extends SimpleApplication {
 					int[][][] nodes = chk.getNodes();
 					if (isNodeVisible(nodes, i, j, k)) {
 						int nVal = chk.getNodeId(i, j, k);
-						//MapNode node = nManager.getNode((short) nVal);
-						//Material mat = getMaterial((short) nVal);
+						MapNode node = nManager.getNode((short) nVal);
+						Material mat = getMaterial((short) nVal);
 						if (nVal == 0) {}
 						
 						else {
@@ -194,13 +193,13 @@ public class RenderProcessor extends SimpleApplication {
 		switch (nodeType) {
 		case 1:
 			mat = new Material(assetManager, "Common/MatDefs/Light/Lighting.j3md");
-            Texture tx = assetManager.loadTexture("default/grass.png");
+            //Texture tx = assetManager.loadTexture("grass.png");
 			//Texture tx = assetManager.loadTexture("default/item_torch.png");
-			tx.setMagFilter(Texture.MagFilter.Nearest);
-			mat.setTexture("DiffuseMap", tx);
-            mat.setBoolean("UseAlpha", true);
-            mat.getAdditionalRenderState().setAlphaTest(true);
-            mat.getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
+			//tx.setMagFilter(Texture.MagFilter.Nearest);
+			//mat.setTexture("DiffuseMap", tx);
+            //mat.setBoolean("UseAlpha", true);
+            //mat.getAdditionalRenderState().setAlphaTest(true);
+            //mat.getAdditionalRenderState().setBlendMode(RenderState.BlendMode.Alpha);
 		}
 		return mat;
 	}

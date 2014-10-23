@@ -152,4 +152,8 @@ public class NodeManager {
     public static MapNode getUnknownFallbackNode() {
         return unknownFallbackNode;
     }
+    
+    public ArrayList<MapNode> getNodeDefinitions () {
+    	return definedNodes;
+    }
 }
