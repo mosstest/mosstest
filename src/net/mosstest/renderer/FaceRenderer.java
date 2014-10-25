@@ -1,4 +1,4 @@
-package net.mosstest.servercore;
+package net.mosstest.renderer;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;

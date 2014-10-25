@@ -1,5 +1,6 @@
 package net.mosstest.servercore;
 
+import net.mosstest.renderer.RenderProcessor;
 import net.mosstest.scripting.MapChunk;
 import net.mosstest.scripting.Position;
 

@@ -1,8 +1,10 @@
 package net.mosstest.servercore;
 
+import net.mosstest.renderer.RenderProcessor;
 import net.mosstest.scripting.MapChunk;
 import net.mosstest.scripting.Player;
 import net.mosstest.scripting.Position;
+
 import org.apache.log4j.Logger;
 
 import java.text.MessageFormat;

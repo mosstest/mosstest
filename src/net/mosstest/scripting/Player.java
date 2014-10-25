@@ -10,8 +10,9 @@ import java.util.HashSet;
 
 import org.apache.commons.lang3.StringUtils;
 
+import net.mosstest.renderer.RenderProcessor;
 import net.mosstest.servercore.PlayerCommunicator;
-import net.mosstest.servercore.RenderProcessor;
+
 import org.jetbrains.annotations.NonNls;
 
 // TODO: Auto-generated Javadoc

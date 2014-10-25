@@ -1,11 +1,13 @@
 package net.mosstest.servercore;
 
+import net.mosstest.renderer.RenderProcessor;
 import net.mosstest.scripting.MapGenerators;
 import net.mosstest.scripting.MossScriptEnv;
 import net.mosstest.scripting.ScriptableDatabase;
 import net.mosstest.scripting.SimplexMapGenerator;
 import net.mosstest.scripting.events.IMossEvent;
 import net.mosstest.servercore.MosstestSecurityManager.ThreadContext;
+
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.log4j.Logger;
