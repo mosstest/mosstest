@@ -1,14 +1,17 @@
 package net.mosstest.servercore;
 
-import com.google.common.collect.HashBiMap;
-import net.mosstest.scripting.MapNode;
-import org.jetbrains.annotations.NonNls;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
+import net.mosstest.scripting.MapNode;
+
+import org.jetbrains.annotations.NonNls;
+
+import com.google.common.collect.HashBiMap;
 
 // TODO: Auto-generated Javadoc
 
@@ -84,11 +87,14 @@ public abstract class AbstractNodeManager implements INodeManager {
      */
     @Override
     public abstract MapNode getNode(String string);
-
+    
+    @Override
+    public abstract List<MapNode> getNodeDefinitions ();
+    
     /* (non-Javadoc)
      * @see net.mosstest.servercore.INodeManager#init()
      */
     @Override
     public abstract void init();
-
+    
 }

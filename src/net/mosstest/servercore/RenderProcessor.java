@@ -2,10 +2,12 @@ package net.mosstest.servercore;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.logging.Level;
 
 import jme3tools.optimize.GeometryBatchFactory;
+import jme3tools.optimize.TextureAtlas;
 import net.mosstest.scripting.MapChunk;
 import net.mosstest.scripting.MapNode;
 import net.mosstest.scripting.Player;
@@ -53,6 +55,7 @@ public class RenderProcessor extends SimpleApplication {
 	private SpotLight spot;
 	private PointLight lamp;
 	private DirectionalLight sun;
+	private TextureAtlas atlas;
 	private ActivityListener activityListener;
 	private RotationListener rotationListener;
 	//private HashMap<Position, RenderMapChunk> allChunks = new HashMap<Position, RenderMapChunk>();
@@ -95,13 +98,14 @@ public class RenderProcessor extends SimpleApplication {
 	@Override
 	public void simpleInitApp() {
 		lastTime = 0;
+		assetManager.registerLocator("scripts", LocalAssetLocator.class);
 		//acquireLock();
 		setupWorldNode ();
 		setupFlashlight();
 		setupSunlight();
 		setupLamplight();
 		setupPlayer();
-		assetManager.registerLocator("scripts", LocalAssetLocator.class);
+		buildTextureAtlas();
         //setupHud();
 		flyCam.setEnabled(false);
 		setupListeners(cam.getUp().clone());
@@ -147,8 +151,8 @@ public class RenderProcessor extends SimpleApplication {
 					int[][][] nodes = chk.getNodes();
 					if (isNodeVisible(nodes, i, j, k)) {
 						int nVal = chk.getNodeId(i, j, k);
-						MapNode node = nManager.getNode((short) nVal);
-						Material mat = getMaterial((short) nVal);
+						//MapNode node = nManager.getNode((short) nVal);
+						//Material mat = getMaterial((short) nVal);
 						if (nVal == 0) {}
 						
 						else {
@@ -293,6 +297,20 @@ public class RenderProcessor extends SimpleApplication {
 		player.setPositionOffsets (0,5,0);
 		player.setChunkPosition(0,0,0);
 		cam.setLocation(new Vector3f(0, 0, 0));
+	}
+	
+	private void buildTextureAtlas () {
+		atlas = new TextureAtlas(1024, 1024);
+		List<MapNode> defs = nManager.getNodeDefinitions();
+		for (MapNode m : defs) {
+			for (String textureLink : m.texture) {
+				try {
+					atlas.addTexture(assetManager.loadTexture(textureLink), textureLink);
+				} catch (Exception e) {
+					System.out.println("COULDN'T FIND.");
+				}
+			}
+		}
 	}
 	
 	private void move(float cx, float cy, float cz) {

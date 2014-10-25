@@ -1,12 +1,15 @@
 package net.mosstest.servercore;
 
-import net.mosstest.scripting.MapNode;
-import org.iq80.leveldb.DB;
-
-import java.util.Map.Entry;
-
 import static org.fusesource.leveldbjni.JniDBFactory.asString;
 import static org.fusesource.leveldbjni.JniDBFactory.bytes;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map.Entry;
+
+import net.mosstest.scripting.MapNode;
+
+import org.iq80.leveldb.DB;
 
 // TODO: Auto-generated Javadoc
 
@@ -113,5 +116,9 @@ public class LocalNodeManager extends AbstractNodeManager {
     @Override
     public boolean containsNode(MapNode node) {
         return this.containedNodes.contains(node);
+    }
+    
+    public List<MapNode> getNodeDefinitions () {
+    	return Collections.unmodifiableList(definedNodes);
     }
 }

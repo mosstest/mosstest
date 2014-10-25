@@ -1,5 +1,7 @@
 package net.mosstest.servercore;
 
+import java.util.List;
+
 import net.mosstest.scripting.MapNode;
 
 // TODO: Auto-generated Javadoc
@@ -56,4 +58,6 @@ public interface INodeManager {
 	public abstract void init();
 
     boolean containsNode(MapNode node);
+    
+    public abstract List<MapNode> getNodeDefinitions ();
 }

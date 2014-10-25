@@ -1,5 +1,8 @@
 package net.mosstest.tests;
 
+import java.util.ArrayList;
+import java.util.Collections;
+
 import net.mosstest.scripting.DefaultNodeParams;
 import net.mosstest.scripting.MapNode;
 import net.mosstest.servercore.INodeManager;
@@ -70,5 +73,10 @@ public class MockNodeManager implements INodeManager {
         //for testing reasons
         return true;
     }
+
+	@Override
+	public ArrayList<MapNode> getNodeDefinitions() {
+		return null;
+	}
 
 }
