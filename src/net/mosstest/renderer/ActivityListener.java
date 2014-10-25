@@ -1,4 +1,4 @@
-package net.mosstest.servercore;
+package net.mosstest.renderer;
 import com.jme3.input.controls.ActionListener;
 
 public class ActivityListener implements ActionListener {

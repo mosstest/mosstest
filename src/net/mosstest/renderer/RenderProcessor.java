@@ -13,7 +13,6 @@ import net.mosstest.scripting.MapChunk;
 import net.mosstest.scripting.MapNode;
 import net.mosstest.scripting.Player;
 import net.mosstest.scripting.Position;
-import net.mosstest.servercore.ActivityListener;
 import net.mosstest.servercore.INodeManager;
 import net.mosstest.servercore.IRenderPreparator;
 import net.mosstest.servercore.LocalAssetLocator;
@@ -22,21 +21,12 @@ import net.mosstest.servercore.MossRenderChunkEvent;
 import net.mosstest.servercore.MossRenderEvent;
 import net.mosstest.servercore.MossRenderStopEvent;
 import net.mosstest.servercore.MosstestSecurityManager;
-import net.mosstest.servercore.RotationListener;
 
 import org.apache.log4j.Logger;
 
 import com.jme3.app.SimpleApplication;
-import com.jme3.input.KeyInput;
-import com.jme3.input.MouseInput;
-import com.jme3.input.controls.KeyTrigger;
-import com.jme3.input.controls.MouseAxisTrigger;
-import com.jme3.light.DirectionalLight;
-import com.jme3.light.PointLight;
-import com.jme3.light.SpotLight;
 import com.jme3.material.Material;
 import com.jme3.math.ColorRGBA;
-import com.jme3.math.FastMath;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.queue.RenderQueue;
@@ -51,25 +41,17 @@ import com.jme3.ui.Picture;
 public class RenderProcessor extends SimpleApplication {
 
 	static Logger logger = Logger.getLogger(RenderProcessor.class);
-	private final float SPEED = 3f;
-	private final float NODE_SIZE = 20f;
-	private final float CHUNK_SIZE = 16*NODE_SIZE;
-	private final float ROTATION_SPEED = 1f;
-	private final double NODE_OFFSET_FROM_CENTER = 8 * NODE_SIZE;
-	private final double CHUNK_OFFSET = 8 * NODE_SIZE;
-	private float[] locChanges = { 0, 0, 0 };
-	private double lastTime;
-	private boolean invertY = false;
+	public static final float NODE_SIZE = 20f;
+	public static final float CHUNK_SIZE = 16*NODE_SIZE;
+	public static final double NODE_OFFSET_FROM_CENTER = 8 * NODE_SIZE;
+	public static final double CHUNK_OFFSET = 8 * NODE_SIZE;
 	private Object renderKey;
 	private Node worldNode;
-	private SpotLight spot;
-	private PointLight lamp;
-	private DirectionalLight sun;
+	private PositionManager positionManager;
 	private TextureAtlas atlas;
-	private ActivityListener activityListener;
-	private RotationListener rotationListener;
+	
 	//private HashMap<Position, RenderMapChunk> allChunks = new HashMap<Position, RenderMapChunk>();
-	public INodeManager nManager;
+	public INodeManager nodeManager;
 	public IRenderPreparator rPreparator;
 	public Player player;
 	public ArrayBlockingQueue<MossRenderEvent> renderEventQueue = new ArrayBlockingQueue<>(
@@ -92,7 +74,7 @@ public class RenderProcessor extends SimpleApplication {
 	}
 	
 	private void initNodeManager (INodeManager manager) {
-		nManager = manager;
+		nodeManager = manager;
 	}
 
 	private void initPreparator(IRenderPreparator prep) {
@@ -107,21 +89,26 @@ public class RenderProcessor extends SimpleApplication {
 
 	@Override
 	public void simpleInitApp() {
-		lastTime = 0;
+		worldNode = new Node("world");
+		
+		buildTextureAtlas();
+		flyCam.setEnabled(false);
+		inputManager.setCursorVisible(false);
 		assetManager.registerLocator("scripts", LocalAssetLocator.class);
 		//acquireLock();
-		setupWorldNode ();
-		setupFlashlight();
-		setupSunlight();
-		setupLamplight();
 		setupPlayer();
-		buildTextureAtlas();
+		
         //setupHud();
-		flyCam.setEnabled(false);
-		setupListeners(cam.getUp().clone());
-		initKeyBindings();
+		positionManager = new PositionManager(inputManager, this);
+		positionManager.initListeners(cam);
+		positionManager.initKeyBindings();
+
 		preparatorChunkTest();
 		//blankChunkTest();
+		rootNode.attachChild(worldNode);
+		rootNode.addLight(LightingManager.getFlashlight(cam.getLocation(), cam.getDirection(), 300f));
+		rootNode.addLight(LightingManager.getDirectionalLight(ColorRGBA.White, new Vector3f(-.5f, -.5f, -.5f)));
+		rootNode.addLight(LightingManager.getPointLight(ColorRGBA.Yellow, 4f, cam.getLocation()));
 	}
     
 	private void setupHud() {
@@ -135,11 +122,7 @@ public class RenderProcessor extends SimpleApplication {
 	
 	@Override
 	public void simpleUpdate(float tpf) {
-		if (lastTime + 10 < System.currentTimeMillis()) {
-			move(locChanges[0], locChanges[1], locChanges[2]);
-			lastTime = System.currentTimeMillis();
-		}
-		inputManager.setCursorVisible(false);
+		positionManager.updatePosition();
 		MossRenderEvent myEvent = renderEventQueue.poll();
 		if (myEvent instanceof MossRenderStopEvent) {
 			logger.info("The renderer thread is shutting down.");
@@ -270,61 +253,8 @@ public class RenderProcessor extends SimpleApplication {
 		//renderChunk(c2, p2);
 		
 	}
-
-	private void setupFlashlight () {
-		spot = new SpotLight();
-		spot.setSpotRange(300f);
-		spot.setSpotInnerAngle(15f * FastMath.DEG_TO_RAD);
-		spot.setSpotOuterAngle(35f * FastMath.DEG_TO_RAD);
-		spot.setColor(ColorRGBA.White.mult(3f));
-		spot.setPosition(cam.getLocation());
-		spot.setDirection(cam.getDirection());
-		rootNode.addLight(spot);
-	}
 	
-	private void setupSunlight () {
-		sun = new DirectionalLight();
-		sun.setColor(ColorRGBA.White);
-		sun.setDirection(new Vector3f(-.5f, -.5f, -.5f).normalizeLocal());
-		rootNode.addLight(sun);
-	}
-	
-	private void setupLamplight () {
-		lamp = new PointLight();
-		lamp.setColor(ColorRGBA.Yellow);
-		lamp.setRadius(4f);
-		lamp.setPosition(cam.getLocation());
-		rootNode.addLight(lamp);
-	}
-	
-	private void setupWorldNode () {
-		worldNode = new Node("world");
-		rootNode.attachChild(worldNode);
-	}
-
-	private void setupPlayer () {
-		player = new Player ("Test Guy");
-		player.setPositionOffsets (0,5,0);
-		player.setChunkPosition(0,0,0);
-		cam.setLocation(new Vector3f(0, 0, 0));
-	}
-	
-	private void buildTextureAtlas () {
-		atlas = new TextureAtlas(1024, 1024);
-		List<MapNode> defs = nManager.getNodeDefinitions();
-		for (MapNode m : defs) {
-			for (String textureLink : m.texture) {
-				try {
-					atlas.addTexture(assetManager.loadTexture(textureLink), textureLink);
-				} catch (Exception e) {
-					System.out.println("COULDN'T FIND.");
-				}
-			}
-		}
-	}
-	
-	private void move(float cx, float cy, float cz) {
-		 
+	public void move(float cx, float cy, float cz) {
 		Vector2f transVector = new Vector2f(cam.getDirection().x,
 				cam.getDirection().z).normalizeLocal();
  
@@ -351,10 +281,26 @@ public class RenderProcessor extends SimpleApplication {
 			player.setPositionOffsets (xoffset, yoffset, zoffset);
 		}
 	}
- 
-	private void setupListeners (Vector3f initialUpVec) {
-		rotationListener = new RotationListener (initialUpVec, invertY, cam, ROTATION_SPEED);
-		activityListener = new ActivityListener (locChanges, SPEED);
+	
+	private void setupPlayer () {
+		player = new Player ("Test Guy");
+		player.setPositionOffsets (0,5,0);
+		player.setChunkPosition(0,0,0);
+		cam.setLocation(new Vector3f(0, 0, 0));
+	}
+	
+	private void buildTextureAtlas () {
+		atlas = new TextureAtlas(1024, 1024);
+		List<MapNode> defs = nodeManager.getNodeDefinitions();
+		for (MapNode m : defs) {
+			for (String textureLink : m.texture) {
+				try {
+					atlas.addTexture(assetManager.loadTexture(textureLink), textureLink);
+				} catch (Exception e) {
+					System.out.println("COULDN'T FIND.");
+				}
+			}
+		}
 	}
 
 	private boolean isNodeVisible (int[][][] chunk, int i, int j, int k) {
@@ -371,39 +317,5 @@ public class RenderProcessor extends SimpleApplication {
 	
 	private void releaseLock () {
 		MosstestSecurityManager.instance.unlock(renderKey);
-	}
-	
-	private void initKeyBindings() {
-		inputManager.addMapping("Jump", new KeyTrigger(KeyInput.KEY_SPACE));
-		inputManager.addMapping("Down", new KeyTrigger(KeyInput.KEY_LSHIFT));
-		inputManager.addMapping("Left", new KeyTrigger(KeyInput.KEY_A));
-		inputManager.addMapping("Right", new KeyTrigger(KeyInput.KEY_D));
-		inputManager.addMapping("Forward", new KeyTrigger(KeyInput.KEY_W));
-		inputManager.addMapping("Back", new KeyTrigger(KeyInput.KEY_S));
-		inputManager.addMapping("TestFeature", new KeyTrigger(KeyInput.KEY_P));
-
-		inputManager.addMapping("CAM_Left", new MouseAxisTrigger(
-				MouseInput.AXIS_X, true), new KeyTrigger(KeyInput.KEY_LEFT));
-
-		inputManager.addMapping("CAM_Right", new MouseAxisTrigger(
-				MouseInput.AXIS_X, false), new KeyTrigger(KeyInput.KEY_RIGHT));
-
-		inputManager.addMapping("CAM_Up", new MouseAxisTrigger(
-				MouseInput.AXIS_Y, false), new KeyTrigger(KeyInput.KEY_UP));
-
-		inputManager.addMapping("CAM_Down", new MouseAxisTrigger(
-				MouseInput.AXIS_Y, true), new KeyTrigger(KeyInput.KEY_DOWN));
-
-		inputManager.addListener(activityListener, "Jump");
-		inputManager.addListener(activityListener, "Down");
-		inputManager.addListener(activityListener, "Left");
-		inputManager.addListener(activityListener, "Right");
-		inputManager.addListener(activityListener, "Forward");
-		inputManager.addListener(activityListener, "Back");
-		inputManager.addListener(rotationListener, "CAM_Left");
-		inputManager.addListener(rotationListener, "CAM_Right");
-		inputManager.addListener(rotationListener, "CAM_Up");
-		inputManager.addListener(rotationListener, "CAM_Down");
-		inputManager.addListener(activityListener, "TestFeature");
 	}
 }

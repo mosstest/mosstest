@@ -1,4 +1,4 @@
-package net.mosstest.servercore;
+package net.mosstest.renderer;
 
 import com.jme3.input.controls.AnalogListener;
 import com.jme3.math.FastMath;
