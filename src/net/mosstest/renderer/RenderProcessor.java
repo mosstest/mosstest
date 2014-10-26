@@ -154,7 +154,7 @@ public class RenderProcessor extends SimpleApplication {
 							float z = (float) ((pos.y - (CHUNK_SIZE * pos.y)) - NODE_OFFSET_FROM_CENTER + CHUNK_OFFSET + (j * NODE_SIZE));
 							float y = (float) ((pos.z + (CHUNK_SIZE * pos.z)) - NODE_OFFSET_FROM_CENTER + CHUNK_OFFSET + (k * NODE_SIZE));
 							
-							TextureAtlasTile texture = RenderProcessor.textures.getAtlasTile(texture);
+							//TextureAtlasTile texture = RenderProcessor.textures.getAtlasTile(texture);
 							for (Face face : Face.values()) {
 								if (FaceRenderer.isFaceVisible(face, nodes, i, j, k)) {
 									FaceRenderer.populateBuffers(face, x, y, z, NODE_SIZE);
