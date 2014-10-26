@@ -22,35 +22,20 @@ public class FaceRenderer {
 	public static boolean isFaceVisible (Face f, int[][][] nodes, byte i, byte j, byte k) {
 		switch (f) {
 		case FRONT:
-			if (k - 1 < 0 || nodes[i][j][k - 1] == 0) {
-				return true;
-			}
-		case TOP:
-			if (j + 1 >= nodes[i].length || nodes[i][j + 1][k] == 0) {
-				return true;
-			}
+			return (k - 1 < 0 || nodes[i][j][k - 1] == 0);
 		case BACK:
-			if (k + 1 >= nodes[i][j].length || nodes[i][j][k + 1] == 0) {
-				return true;
-			}
-			break;
+			return (k + 1 >= nodes[i][j].length || nodes[i][j][k + 1] == 0);
+		case TOP:
+			return (j + 1 >= nodes[i].length || nodes[i][j + 1][k] == 0);
 		case BOTTOM:
-			if (j - 1 < 0 || nodes[i][j - 1][k] == 0) {
-				return true;
-			}
-			break;
+			return (j - 1 < 0 || nodes[i][j - 1][k] == 0);
 		case LEFT:
-			if (i + 1 <= nodes.length || nodes[i + 1][j][k] == 0) {
-				return true;
-			}
-			break;
+			return (i + 1 <= nodes.length || nodes[i + 1][j][k] == 0);
 		case RIGHT:
-			/*if (i - 1 < 0 || nodes[i - 1][j][k] == 0) {
-				return true;
-			}*/
-			break;
+			return (i - 1 < 0 || nodes[i - 1][j][k] == 0);
+		default:
+			return false;
 		}
-		return false;
 	}
 	
 	public static void populateBuffers(Face f, float x, float y, float z, final float NODE_SIZE) {
@@ -94,6 +79,9 @@ public class FaceRenderer {
 		}
 		indices.put(vertexIndexCounter + 0).put(vertexIndexCounter + 2).put(vertexIndexCounter + 1);
 		indices.put(vertexIndexCounter + 0).put(vertexIndexCounter + 3).put(vertexIndexCounter + 2);
+		
+		
+		
 		textures.put(0).put(0);
 		textures.put(0).put(1);
 		textures.put(1).put(1);
@@ -120,7 +108,6 @@ public class FaceRenderer {
 	public static FloatBuffer getVertices () {
 		return vertices;
 	}
-	
 	
 	public static FloatBuffer getTextureCoordinates () {
 		return textures;

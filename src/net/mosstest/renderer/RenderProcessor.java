@@ -2,12 +2,15 @@ package net.mosstest.renderer;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.logging.Level;
 
 import jme3tools.optimize.GeometryBatchFactory;
 import jme3tools.optimize.TextureAtlas;
+import jme3tools.optimize.TextureAtlas.TextureAtlasTile;
 import net.mosstest.renderer.FaceRenderer.Face;
 import net.mosstest.scripting.MapChunk;
 import net.mosstest.scripting.MapNode;
@@ -37,7 +40,6 @@ import com.jme3.scene.VertexBuffer.Type;
 import com.jme3.system.AppSettings;
 import com.jme3.ui.Picture;
 
-
 public class RenderProcessor extends SimpleApplication {
 
 	static Logger logger = Logger.getLogger(RenderProcessor.class);
@@ -45,10 +47,10 @@ public class RenderProcessor extends SimpleApplication {
 	public static final float CHUNK_SIZE = 16*NODE_SIZE;
 	public static final double NODE_OFFSET_FROM_CENTER = 8 * NODE_SIZE;
 	public static final double CHUNK_OFFSET = 8 * NODE_SIZE;
+	public static TextureAtlas textures;
 	private Object renderKey;
 	private Node worldNode;
 	private PositionManager positionManager;
-	private TextureAtlas atlas;
 	
 	//private HashMap<Position, RenderMapChunk> allChunks = new HashMap<Position, RenderMapChunk>();
 	public INodeManager nodeManager;
@@ -135,7 +137,7 @@ public class RenderProcessor extends SimpleApplication {
 	}
 //
 	public void renderChunk(MapChunk chk, Position pos) {
-		Mesh completeMesh = new Mesh ();
+		Mesh mesh = new Mesh ();
 		FaceRenderer.initialize();
 		//RenderNode[][][] renderNodes = new RenderNode[16][16][16];
 		for (byte i = 0; i < 16; i++) {
@@ -146,15 +148,13 @@ public class RenderProcessor extends SimpleApplication {
 						int nVal = chk.getNodeId(i, j, k);
 						//MapNode node = nManager.getNode((short) nVal);
 						//Material mat = getMaterial((short) nVal);
-						if (nVal == 0) {}
-						
-						else {
+						if (nVal != 0) {
 							//z and y are switched on purpose.
 							float x = (float) ((pos.x + (CHUNK_SIZE * pos.x)) - NODE_OFFSET_FROM_CENTER + CHUNK_OFFSET + (i * NODE_SIZE));
 							float z = (float) ((pos.y - (CHUNK_SIZE * pos.y)) - NODE_OFFSET_FROM_CENTER + CHUNK_OFFSET + (j * NODE_SIZE));
 							float y = (float) ((pos.z + (CHUNK_SIZE * pos.z)) - NODE_OFFSET_FROM_CENTER + CHUNK_OFFSET + (k * NODE_SIZE));
 							
-							
+							TextureAtlasTile texture = RenderProcessor.textures.getAtlasTile(texture);
 							for (Face face : Face.values()) {
 								if (FaceRenderer.isFaceVisible(face, nodes, i, j, k)) {
 									FaceRenderer.populateBuffers(face, x, y, z, NODE_SIZE);
@@ -171,12 +171,14 @@ public class RenderProcessor extends SimpleApplication {
 		FloatBuffer tex = FaceRenderer.getTextureCoordinates();
 		FloatBuffer normals = FaceRenderer.getNormals();
 		IntBuffer indices = FaceRenderer.getIndices();
-		completeMesh.setBuffer(Type.Position, 3, vertices);
-		completeMesh.setBuffer(Type.Normal, 3, normals);
-		completeMesh.setBuffer(Type.Index, 3, indices);
-        completeMesh.setBuffer(Type.TexCoord, 2, tex);
-		completeMesh.updateBound();
-		Geometry geom = new Geometry("chunkMesh", completeMesh);
+		
+		mesh.setBuffer(Type.Position, 3, vertices);
+		mesh.setBuffer(Type.Normal, 3, normals);
+		mesh.setBuffer(Type.Index, 3, indices);
+        mesh.setBuffer(Type.TexCoord, 2, tex);
+		mesh.updateBound();
+		
+		Geometry geom = new Geometry("chunkMesh", mesh);
 		Material mat = getMaterial((short) 1);
 		geom.setMaterial(mat);
         geom.setQueueBucket(RenderQueue.Bucket.Transparent);
@@ -290,15 +292,25 @@ public class RenderProcessor extends SimpleApplication {
 	}
 	
 	private void buildTextureAtlas () {
-		atlas = new TextureAtlas(1024, 1024);
+		textures = new TextureAtlas(1024, 1024);
+		HashSet<String> uniqueTextures = new HashSet<String>();
 		List<MapNode> defs = nodeManager.getNodeDefinitions();
 		for (MapNode m : defs) {
 			for (String textureLink : m.texture) {
-				try {
-					atlas.addTexture(assetManager.loadTexture(textureLink), textureLink);
-				} catch (Exception e) {
-					System.out.println("COULDN'T FIND.");
-				}
+				uniqueTextures.add(textureLink);
+			}
+		}
+		
+		Iterator<String> it = uniqueTextures.iterator();
+		while (it.hasNext()) {
+			String textureLink = it.next();
+			try {
+				System.out.println("Texture link: "+textureLink);
+				textures.addTexture(assetManager.loadTexture(textureLink), textureLink);
+				System.out.println("Hey, loaded : "+textureLink);
+			} catch (Exception e) {
+				e.printStackTrace();
+				System.out.println("COULDN'T FIND.");
 			}
 		}
 	}
