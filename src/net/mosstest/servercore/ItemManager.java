@@ -70,7 +70,7 @@ public class ItemManager {
     {
 
         defItems.add(this.unknownFallbackItem);
-        itemsForNode.put(NodeManager.getUnknownFallbackNode(),
+        itemsForNode.put(LocalNodeManager.getUnknownFallbackNode(),
                 this.unknownFallbackItem);
     }
 

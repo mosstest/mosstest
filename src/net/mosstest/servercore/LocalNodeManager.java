@@ -121,4 +121,20 @@ public class LocalNodeManager extends AbstractNodeManager {
     public List<MapNode> getNodeDefinitions () {
     	return Collections.unmodifiableList(definedNodes);
     }
+
+    private static final MapNode unknownFallbackNode; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+
+
+    static {
+
+        unknownFallbackNode = new MapNode("sys:unknown", Messages.getString("NodeManager.DESC_UNKNWN_NODE"), "builtins/unknown.png", 1);
+        unknownFallbackNode.setNodeId((short) -1);
+    }
+
+    /* instance creation */ {
+        this.definedNodes.add(this.unknownFallbackNode);
+    }
+    public static MapNode getUnknownFallbackNode() {
+        return unknownFallbackNode;
+    }
 }
