@@ -14,6 +14,7 @@ import io.netty.util.AttributeKey;
 import net.jcip.annotations.GuardedBy;
 import net.jcip.annotations.ThreadSafe;
 import net.mosstest.netcommand.*;
+import net.mosstest.scripting.Player;
 import net.mosstest.scripting.authentication.AccessDenied;
 import net.mosstest.scripting.authentication.AuthChallenge;
 import net.mosstest.scripting.authentication.MossAuthenticator;
@@ -299,6 +300,7 @@ public class ServerNetworkingManager {
                 ToClientErrorOccurred response = new ToClientErrorOccurred(Messages.getString("STRAY_HELLO"));
                 ctx.writeAndFlush(response).sync();
                 ctx.close().sync();
+                return;
             } else {
                 synchronized (getConnectionState(ctx)) {
                     ServerConnectionState newState = new ServerConnectionState();
@@ -309,6 +311,7 @@ public class ServerNetworkingManager {
                     ToClientAuthRequested response = new ToClientAuthRequested(challenge.type, challenge.challenge);
                     // we want to flush as this packet should be seen on its own by the remote endpoint.
                     ctx.writeAndFlush(response);
+                    return;
                 }
             }
         }
@@ -322,13 +325,20 @@ public class ServerNetworkingManager {
             assertStateNotNull(st, ctx);
             AuthChallenge challenge = st.getChallenge();
             MossAuthenticator authenticator = world.getMossEnv().getAuthenticator(challenge.username);
+            Player p;
             try {
-                authenticator.checkLogon(challenge, msg.getAuthData());
+                p = authenticator.checkLogon(challenge, msg.getAuthData());
             } catch (AccessDenied e){
                 ToClientAuthDenied response = new ToClientAuthDenied(e.reason);
                 ctx.writeAndFlush(response);
                 ctx.close();
+                return;
             }
+            synchronized(st) {
+                st.setPlayer(p);
+                st.setState(ServerConnectionState.StateMachine.AUTHENTICATED);
+            }
+
         }
     }
 

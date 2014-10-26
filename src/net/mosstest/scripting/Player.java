@@ -22,8 +22,15 @@ import org.jetbrains.annotations.NonNls;
 /**
  * The Class Player.
  */
-public class Player implements IByteArrayWritable{
-private static final Logger logger = Logger.getLogger(Player.class);
+public class Player implements IByteArrayWritable {
+
+    // TODO USE STAMPED LOCK
+
+    static {
+        if (Integer.valueOf(10) > 2) throw new RuntimeException("TODO thread safety fix for Player.java");
+    }
+
+    private static final Logger logger = Logger.getLogger(Player.class);
     /**
      * The inventories.
      */
@@ -272,15 +279,15 @@ private static final Logger logger = Logger.getLogger(Player.class);
         try {
             dos.writeInt(this.xchk);
 
-        dos.writeInt(this.ychk);
-        dos.writeInt(this.zchk);
-        dos.writeDouble(this.xoffset);
-        dos.writeDouble(this.yoffset);
-        dos.writeDouble(this.zoffset);
-        dos.writeUTF(this.name);
-        dos.writeUTF(this.privsToString());
-        dos.flush();
-        bos.flush();
+            dos.writeInt(this.ychk);
+            dos.writeInt(this.zchk);
+            dos.writeDouble(this.xoffset);
+            dos.writeDouble(this.yoffset);
+            dos.writeDouble(this.zoffset);
+            dos.writeUTF(this.name);
+            dos.writeUTF(this.privsToString());
+            dos.flush();
+            bos.flush();
         } catch (IOException e) {
             logger.fatal("IOException serializing a player. Cannot continue.");
             throw new MosstestFatalDeathException(e);

@@ -34,11 +34,15 @@ public class MossWorld {
     private ScriptEnv sEnv;
     private ScriptableDatabase sdb;
     private EventProcessor evp;
-
+    private PlayerManager pm;
     @SuppressWarnings("unused")
     private ServerNetworkingManager snv;
 
     volatile boolean run = true;
+
+    public ServerNetworkingManager getSnv() {
+        return snv;
+    }
 
     public FuturesProcessor getFp() {
         return fp;
@@ -135,15 +139,15 @@ public class MossWorld {
         if (port >= 0) {
             logger.error(Messages.getString("MossWorld.NO_NETWORKING_NOW")); //$NON-NLS-1$
             /*
-			 * try { this.snv = new ServerNetworkingManager(port, this); } catch
+             * try { this.snv = new ServerNetworkingManager(port, this); } catch
 			 * (IOException e) { throw new MossWorldLoadException(
 			 * "Failure in opening server socket for listening!"); }
 			 */
         } // else {
-		/*	*/
+        /*	*/
         this.rp = new LocalRenderPreparator(this.rend, this.nc);
         this.rp.setNodeManager(nm);
-		/*	*/
+        /*	*/
         this.rend = RenderProcessor.init(this.nm, this.rp);
         // }
 
