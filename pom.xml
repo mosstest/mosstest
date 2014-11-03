@@ -371,6 +371,11 @@
             <artifactId>commons-codec</artifactId>
             <version>1.9</version>
         </dependency>
+        <dependency>
+            <groupId>com.bugsnag</groupId>
+            <artifactId>bugsnag</artifactId>
+            <version>1.0.3</version>
+        </dependency>
     </dependencies>
 
 </project>

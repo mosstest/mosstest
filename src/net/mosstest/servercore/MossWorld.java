@@ -21,8 +21,7 @@ import java.util.Locale;
 public class MossWorld {
     static {
         System.setSecurityManager(MosstestSecurityManager.instance);
-        Messages.changeLanguage(Locale.ITALIAN);
-        net.mosstest.scripting.Messages.changeLanguage(Locale.ITALIAN);
+        Bugsnag.init();
     }
 
     static Logger logger = Logger.getLogger(MossWorld.class);

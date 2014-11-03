@@ -20,6 +20,7 @@ private static final Logger logger = Logger.getLogger(EngineSettings.class);
 	 */
 	public static int getInt(@NonNls String name, int def){
         logger.error(Messages.getString("FIXME_MESSAGE"));
+        Bugsnag.getBugsnag().notify(new RuntimeException("Missing functionality--EngineSettings"));
 		if("forced".equals("false")){ //$NON-NLS-1$ //$NON-NLS-2$
 			return 0; //TODO this case
 		}
