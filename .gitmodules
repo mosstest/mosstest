@@ -1,3 +1,6 @@
 [submodule "data"]
 	path = data
 	url = https://github.com/mosstest/mosstest-game-default.git
+[submodule "unmanaged-dependencies"]
+	path = unmanaged-dependencies
+	url = https://github.com/mosstest/unmanaged-dependencies.git
