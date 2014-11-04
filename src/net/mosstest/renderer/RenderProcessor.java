@@ -89,7 +89,7 @@ public class RenderProcessor extends SimpleApplication {
 		flyCam.setEnabled(false);
 		inputManager.setCursorVisible(false);
 		
-		PlayerManager.makePlayer();
+		player = PlayerManager.makePlayer();
 		cam.setLocation(new Vector3f(0, 0, 0));
         setupHud();
 		
