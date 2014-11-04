@@ -21,7 +21,6 @@ import net.mosstest.servercore.MapGeneratorException;
 import net.mosstest.servercore.MossRenderChunkEvent;
 import net.mosstest.servercore.MossRenderEvent;
 import net.mosstest.servercore.MossRenderStopEvent;
-import net.mosstest.servercore.MosstestSecurityManager;
 
 import org.apache.log4j.Logger;
 
@@ -46,7 +45,6 @@ public class RenderProcessor extends SimpleApplication {
 	public static final double NODE_OFFSET_FROM_CENTER = 8 * NODE_SIZE;
 	public static final double CHUNK_OFFSET = 8 * NODE_SIZE;
 	public static TextureAtlas textures;
-	private Object renderKey;
 	private Node worldNode;
 	private PositionManager positionManager;
 	
@@ -68,7 +66,6 @@ public class RenderProcessor extends SimpleApplication {
 		app.setShowSettings(false);
 		app.initNodeManager(manager);
 		app.initPreparator(preparator);
-		app.initSecurityLock();
 		app.start();
 		return app;
 	}
@@ -82,11 +79,7 @@ public class RenderProcessor extends SimpleApplication {
 		rPreparator.setRenderProcessor(this);
 		rPreparator.start();
 	}
-
-	private void initSecurityLock () {
-		renderKey = new Object();
-	}
-
+	
 	@Override
 	public void simpleInitApp() {
 		worldNode = new Node("world");
@@ -97,19 +90,20 @@ public class RenderProcessor extends SimpleApplication {
 		inputManager.setCursorVisible(false);
 		
 		//acquireLock();
-		setupPlayer();
+		PlayerManager.makePlayer();
+		cam.setLocation(new Vector3f(0, 0, 0));
         setupHud();
 		
         positionManager = new PositionManager(inputManager, this);
 		positionManager.initListeners(cam);
 		positionManager.initKeyBindings();
 
-		preparatorChunkTest();
+		RenderTester.preparatorChunkTest(this);
 		//blankChunkTest();
 		rootNode.attachChild(worldNode);
-		rootNode.addLight(LightingManager.getFlashlight(cam.getLocation(), cam.getDirection(), 300f));
-		rootNode.addLight(LightingManager.getDirectionalLight(ColorRGBA.White, new Vector3f(-.5f, -.5f, -.5f)));
-		rootNode.addLight(LightingManager.getPointLight(ColorRGBA.Yellow, 4f, cam.getLocation()));
+		rootNode.addLight(LightingFactory.makeFlashlight(cam.getLocation(), cam.getDirection(), 300f));
+		rootNode.addLight(LightingFactory.makeDirectionalLight(ColorRGBA.White, new Vector3f(-.5f, -.5f, -.5f)));
+		rootNode.addLight(LightingFactory.makePointLight(ColorRGBA.Yellow, 4f, cam.getLocation()));
 	}
     
 	private void setupHud() {
@@ -210,51 +204,6 @@ public class RenderProcessor extends SimpleApplication {
 		if (maybe != null) {renderChunk(maybe, pos);}
 	}
 	
-	private void preparatorChunkTest() {
-		Position p1 = new Position(0, 0, 0, 0);
-		Position p2 = new Position(1, 0, 0, 0);
-		Position p3 = new Position(0, 1, 0, 0);
-		Position p4 = new Position(1, 1, 0, 0);
-		Position p5 = new Position(-1,0,0,0);
-		Position p6 = new Position(0,-1,0,0);
-		Position p7 = new Position(-1,-1,0,0);
-
-		getChunk(p1);
-		getChunk(p2);
-		getChunk(p3);
-		getChunk(p4);
-		getChunk(p5);
-		getChunk(p6);
-		getChunk(p7);
-	}	
-	
-	private void blankChunkTest () {
-		Position p1 = new Position(0, 0, 0, 0);
-		Position p2 = new Position(1, 1, 1, 0);
-		
-		int[][][] n1 = new int[16][16][16];
-		int[][][] n2 = new int[16][16][16];
-		for (int i = 0; i < n1.length; i++) {
-			for (int j = 0; j < n1[i].length; j++) {
-				for (int k = 0; k < n1[i][j].length; k++) {
-					n1[i][j][k] = 1;
-					n2[i][j][k] = 1;
-				}
-			}
-		}
-		
-		MapChunk c1 = new MapChunk(p1, n1);
-		MapChunk c2 = new MapChunk(p2, n2);
-		
-		MossRenderEvent e1 = new MossRenderChunkEvent(c1);
-		MossRenderEvent e2 = new MossRenderChunkEvent(c2);
-		
-		renderEventQueue.add(e1);
-		renderEventQueue.add(e2);
-		//renderChunk(c2, p2);
-		
-	}
-	
 	public void move(float cx, float cy, float cz) {
 		Vector2f transVector = new Vector2f(cam.getDirection().x,
 				cam.getDirection().z).normalizeLocal();
@@ -283,12 +232,7 @@ public class RenderProcessor extends SimpleApplication {
 		}
 	}
 	
-	private void setupPlayer () {
-		player = new Player ("Test Guy");
-		player.setPositionOffsets (0,5,0);
-		player.setChunkPosition(0,0,0);
-		cam.setLocation(new Vector3f(0, 0, 0));
-	}
+	
 	
 	private void buildTextureAtlas () {
 		textures = new TextureAtlas(1024, 1024);
@@ -318,13 +262,5 @@ public class RenderProcessor extends SimpleApplication {
 		}
 		return (chunk[i+1][j][k] == 0 || chunk[i][j+1][k] == 0 || chunk[i][j][k+1] == 0 ||
 			chunk[i-1][j][k] == 0 || chunk[i][j-1][k] == 0 || chunk[i][j][k-1] == 0);
-	}
-	
-	private void acquireLock () {
-		MosstestSecurityManager.instance.lock(renderKey, null);
-	}
-	
-	private void releaseLock () {
-		MosstestSecurityManager.instance.unlock(renderKey);
 	}
 }
