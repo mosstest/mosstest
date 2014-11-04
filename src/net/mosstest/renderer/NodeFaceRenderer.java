@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
-public class FaceRenderer {
+public class NodeFaceRenderer {
 	private static FloatBuffer vertices;
 	private static FloatBuffer textures;
 	private static FloatBuffer normals;
@@ -19,7 +19,7 @@ public class FaceRenderer {
 		vertexIndexCounter = 0;
 	}
 	
-	public static boolean isFaceVisible (Face f, int[][][] nodes, byte i, byte j, byte k) {
+	public static boolean isNodeFaceVisible (NodeFace f, int[][][] nodes, byte i, byte j, byte k) {
 		switch (f) {
 		case FRONT:
 			return (k - 1 < 0 || nodes[i][j][k - 1] == 0);
@@ -38,40 +38,39 @@ public class FaceRenderer {
 		}
 	}
 	
-	public static void populateBuffers(Face f, float x, float y, float z, final float NODE_SIZE) {
-		/*Vertices start at the top left corner and go clockwise around the face.*/
-		if (f == Face.FRONT) {
+	public static void populateBuffers(NodeFace f, float x, float y, float z, final float NODE_SIZE) {
+		/*Vertices start at the top left corner and go clockwise around the NodeFace.*/
+		if (f == NodeFace.FRONT) {
 			vertices.put(x).put(y).put(z);
 			vertices.put(x + NODE_SIZE).put(y).put(z);
 			vertices.put(x + NODE_SIZE).put(y).put(z - NODE_SIZE);
 			vertices.put(x).put(y).put(z - NODE_SIZE);
-			
 		}
-		else if (f == Face.TOP) {
+		else if (f == NodeFace.TOP) {
 			vertices.put(x).put(y + NODE_SIZE).put(z);
 			vertices.put(x + NODE_SIZE).put(y + NODE_SIZE).put(z);
 			vertices.put(x + NODE_SIZE).put(y).put(z);
 			vertices.put(x).put(y).put(z);
 		}
-		else if (f == Face.BACK) {
+		else if (f == NodeFace.BACK) {
 			vertices.put(x + NODE_SIZE).put(y + NODE_SIZE).put(z);
 			vertices.put(x).put(y + NODE_SIZE).put(z);
 			vertices.put(x).put(y + NODE_SIZE).put(z - NODE_SIZE);
 			vertices.put(x + NODE_SIZE).put(y + NODE_SIZE).put(z - NODE_SIZE);
 		}
-		else if (f == Face.BOTTOM) {
+		else if (f == NodeFace.BOTTOM) {
 			vertices.put(x + NODE_SIZE).put(y + NODE_SIZE).put(z - NODE_SIZE);
 			vertices.put(x).put(y + NODE_SIZE).put(z - NODE_SIZE);
 			vertices.put(x).put(y).put(z - NODE_SIZE);
 			vertices.put(x + NODE_SIZE).put(y).put(z - NODE_SIZE);
 		}
-		else if (f == Face.LEFT) {
+		else if (f == NodeFace.LEFT) {
 			vertices.put(x).put(y + NODE_SIZE).put(z);
 			vertices.put(x).put(y).put(z);
 			vertices.put(x).put(y).put(z - NODE_SIZE);
 			vertices.put(x).put(y + NODE_SIZE).put(z - NODE_SIZE);
 		}
-		else if (f == Face.RIGHT) {
+		else if (f == NodeFace.RIGHT) {
 			vertices.put(x + NODE_SIZE).put(y).put(z);
 			vertices.put(x + NODE_SIZE).put(y + NODE_SIZE).put(z);
 			vertices.put(x + NODE_SIZE).put(y + NODE_SIZE).put(z - NODE_SIZE);
@@ -80,20 +79,17 @@ public class FaceRenderer {
 		indices.put(vertexIndexCounter + 0).put(vertexIndexCounter + 2).put(vertexIndexCounter + 1);
 		indices.put(vertexIndexCounter + 0).put(vertexIndexCounter + 3).put(vertexIndexCounter + 2);
 		
-		
+		//RenderProcessor.getAssetManager();
 		
 		textures.put(0).put(0);
 		textures.put(0).put(1);
 		textures.put(1).put(1);
 		textures.put(1).put(0);
-		for(int m=0; m<4; m++)
-			normals.put(2).put(3).put(5);
+		for(int m=0; m<4; m++) { normals.put(2).put(3).put(5); }
 		vertexIndexCounter += 4;
 	}
 	
-	public enum Face {
-		FRONT, TOP, BACK, BOTTOM, LEFT, RIGHT
-	}
+	
 	
 	private static FloatBuffer getDirectFloatBuffer (int size) {
 		ByteBuffer temp = ByteBuffer.allocateDirect(size);

@@ -10,8 +10,6 @@ import java.util.logging.Level;
 
 import jme3tools.optimize.GeometryBatchFactory;
 import jme3tools.optimize.TextureAtlas;
-import jme3tools.optimize.TextureAtlas.TextureAtlasTile;
-import net.mosstest.renderer.FaceRenderer.Face;
 import net.mosstest.scripting.MapChunk;
 import net.mosstest.scripting.MapNode;
 import net.mosstest.scripting.Player;
@@ -93,15 +91,16 @@ public class RenderProcessor extends SimpleApplication {
 	public void simpleInitApp() {
 		worldNode = new Node("world");
 		
+		assetManager.registerLocator("scripts", LocalAssetLocator.class);
 		buildTextureAtlas();
 		flyCam.setEnabled(false);
 		inputManager.setCursorVisible(false);
-		assetManager.registerLocator("scripts", LocalAssetLocator.class);
+		
 		//acquireLock();
 		setupPlayer();
+        setupHud();
 		
-        //setupHud();
-		positionManager = new PositionManager(inputManager, this);
+        positionManager = new PositionManager(inputManager, this);
 		positionManager.initListeners(cam);
 		positionManager.initKeyBindings();
 
@@ -138,7 +137,7 @@ public class RenderProcessor extends SimpleApplication {
 //
 	public void renderChunk(MapChunk chk, Position pos) {
 		Mesh mesh = new Mesh ();
-		FaceRenderer.initialize();
+		NodeFaceRenderer.initialize();
 		//RenderNode[][][] renderNodes = new RenderNode[16][16][16];
 		for (byte i = 0; i < 16; i++) {
 			for (byte j = 0; j < 16; j++) {
@@ -155,9 +154,9 @@ public class RenderProcessor extends SimpleApplication {
 							float y = (float) ((pos.z + (CHUNK_SIZE * pos.z)) - NODE_OFFSET_FROM_CENTER + CHUNK_OFFSET + (k * NODE_SIZE));
 							
 							//TextureAtlasTile texture = RenderProcessor.textures.getAtlasTile(texture);
-							for (Face face : Face.values()) {
-								if (FaceRenderer.isFaceVisible(face, nodes, i, j, k)) {
-									FaceRenderer.populateBuffers(face, x, y, z, NODE_SIZE);
+							for (NodeFace face : NodeFace.values()) {
+								if (NodeFaceRenderer.isNodeFaceVisible(face, nodes, i, j, k)) {
+									NodeFaceRenderer.populateBuffers(face, x, y, z, NODE_SIZE);
 								}
 							}
 							//RenderNode geom = new RenderNode(mat, loc, NODE_SIZE, NodeManager.getNode((short)nVal)null);
@@ -167,10 +166,10 @@ public class RenderProcessor extends SimpleApplication {
 				}
 			}
 		}
-		FloatBuffer vertices = FaceRenderer.getVertices();
-		FloatBuffer tex = FaceRenderer.getTextureCoordinates();
-		FloatBuffer normals = FaceRenderer.getNormals();
-		IntBuffer indices = FaceRenderer.getIndices();
+		FloatBuffer vertices = NodeFaceRenderer.getVertices();
+		FloatBuffer tex = NodeFaceRenderer.getTextureCoordinates();
+		FloatBuffer normals = NodeFaceRenderer.getNormals();
+		IntBuffer indices = NodeFaceRenderer.getIndices();
 		
 		mesh.setBuffer(Type.Position, 3, vertices);
 		mesh.setBuffer(Type.Normal, 3, normals);
@@ -305,12 +304,10 @@ public class RenderProcessor extends SimpleApplication {
 		while (it.hasNext()) {
 			String textureLink = it.next();
 			try {
-				System.out.println("Texture link: "+textureLink);
 				textures.addTexture(assetManager.loadTexture(textureLink), textureLink);
-				System.out.println("Hey, loaded : "+textureLink);
+				System.out.println("Renderer loaded: "+textureLink);
 			} catch (Exception e) {
-				e.printStackTrace();
-				System.out.println("COULDN'T FIND.");
+				System.out.println("Renderer unable to find: "+textureLink);
 			}
 		}
 	}
