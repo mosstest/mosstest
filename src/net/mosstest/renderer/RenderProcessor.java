@@ -89,7 +89,6 @@ public class RenderProcessor extends SimpleApplication {
 		flyCam.setEnabled(false);
 		inputManager.setCursorVisible(false);
 		
-		//acquireLock();
 		PlayerManager.makePlayer();
 		cam.setLocation(new Vector3f(0, 0, 0));
         setupHud();
@@ -99,7 +98,7 @@ public class RenderProcessor extends SimpleApplication {
 		positionManager.initKeyBindings();
 
 		RenderTester.preparatorChunkTest(this);
-		//blankChunkTest();
+		
 		rootNode.attachChild(worldNode);
 		rootNode.addLight(LightingFactory.makeFlashlight(cam.getLocation(), cam.getDirection(), 300f));
 		rootNode.addLight(LightingFactory.makeDirectionalLight(ColorRGBA.White, new Vector3f(-.5f, -.5f, -.5f)));
