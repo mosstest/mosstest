@@ -5,11 +5,7 @@
   <artifactId>mosstest</artifactId>
   <name>Mosstest</name>
   <version>0.1.0-SNAPSHOT</version>
-<<<<<<< HEAD
-  <description>Open-source InfiniMiner remake</description>
-=======
   <description>Open-source voxel engine with some extra features</description>
->>>>>>> netclient
   <url>https://github.com/mosstest/mosstest</url>
   <issueManagement>
     <system>Launchpad</system>
@@ -31,8 +27,11 @@
     </resources>
     <plugins>
       <plugin>
-<<<<<<< HEAD
-=======
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>0.7.3-SNAPSHOT</version>
+      </plugin>
+      <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>deb-maven-plugin</artifactId>
         <version>1.0-SNAPSHOT</version>
@@ -50,7 +49,6 @@
         </configuration>
       </plugin>
       <plugin>
->>>>>>> netclient
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.1</version>
         <configuration>
@@ -149,8 +147,6 @@
       <url>http://forum-mosstest.rhcloud.com/repository/</url>
     </repository>
   </repositories>
-<<<<<<< HEAD
-=======
   <pluginRepositories>
     <pluginRepository>
       <id>codehaus-mojo-staging</id>
@@ -158,7 +154,6 @@
       <url>https://nexus.codehaus.org/content/groups/snapshots-group/</url>
     </pluginRepository>
   </pluginRepositories>
->>>>>>> netclient
   <dependencies>
     <dependency>
       <groupId>org.lwjgl.lwjgl</groupId>

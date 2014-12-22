@@ -48,14 +48,14 @@ public interface INodeParams {
 	 *            The tool used to dig the node.
 	 * @param target
 	 *            The position of the node that has been dug.
-	 * @param punchedFace
+	 * @param dugFace
 	 *            The face on which the the tool was pointed when digging was
 	 *            complete. Note that if a dig begins on one face but the player
 	 *            moves the aim to another face the onPunch handler may receive
 	 *            a different face than this handler.
 	 */
 	public abstract void onDig(Player player, MossItem tool,
-			NodePosition target, Face punchedFace);
+			NodePosition target, Face dugFace);
 
 	/**
 	 * Called when a node is placed directly above, below, left, right, in front
